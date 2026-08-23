@@ -197,7 +197,7 @@ public class EntryMarkdownParserTests
     [Fact]
     public void InterpretationMarkdownParser_ParseMultiple_DataFile_ParsesEveryEntry()
     {
-        var path = Path.Combine(FindRepoRoot(), "data", "2026-08-22-word.md");
+        var path = Path.Combine(FindRepoRoot(), "doc", "sample-word-multi.md");
 
         var entries = InterpretationMarkdownParser.ParseMultiple(path);
 
@@ -267,7 +267,7 @@ public class EntryMarkdownParserTests
     [Fact]
     public void WritingMarkdownParser_ParseMultiple_DataFile_ParsesEveryEntry()
     {
-        var path = Path.Combine(FindRepoRoot(), "data", "2026-08-22-writings.md");
+        var path = Path.Combine(FindRepoRoot(), "doc", "sample-writings-multi.md");
 
         var entries = WritingMarkdownParser.ParseMultiple(path);
 

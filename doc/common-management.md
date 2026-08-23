@@ -748,7 +748,7 @@ went to
 | 정렬 버튼 | 오름차순 / 내림차순 | Ascending / Descending |
 | 학습 팝업 | 영작 | Writing |
 
-* **바꾸지 않은 것**: `.md` 가져오기/내보내기가 인식하는 **라벨 텍스트**(`해석:`/`표현:`/`설명:`/`예문:`/`품사:`, `#### 라벨` 소제목 등)는 그대로 한글이다 — 이건 UI 크롬이 아니라 사용자가 직접 손으로 쓰는 **파일 형식**이라, 여기까지 바꾸면 `data/2026-08-22-word.md` 등 기존에 작성해둔 실제 파일들이 더는 인식되지 않는다. `DefaultLearningData.cs`의 학습 콘텐츠(예: `Ko = "보다"`)도 앱의 핵심 데이터(한국어 뜻 자체)라 당연히 그대로 뒀다.
+* **바꾸지 않은 것**: `.md` 가져오기/내보내기가 인식하는 **라벨 텍스트**(`해석:`/`표현:`/`설명:`/`예문:`/`품사:`, `#### 라벨` 소제목 등)는 그대로 한글이다 — 이건 UI 크롬이 아니라 사용자가 직접 손으로 쓰는 **파일 형식**이라, 여기까지 바꾸면 `doc/sample-word-multi.md`(§26.13) 등 기존에 작성해둔 실제 파일들이 더는 인식되지 않는다. `DefaultLearningData.cs`의 학습 콘텐츠(예: `Ko = "보다"`)도 앱의 핵심 데이터(한국어 뜻 자체)라 당연히 그대로 뒀다.
 * 학습 팝업의 `단어` 섹션은 원래도 소제목이 없고 `PopupContentData.InterpretationHeader`(품사, 해석)로만 표시되므로(§26.8) 이번 변경으로 새로 영어화할 라벨이 없었다.
 
 ### 26.11 읽기 창 메뉴 재구성 (`Menu` 아래 `Files`/`Sentences`/`Words`/`Writing`/`Study`)
@@ -788,6 +788,13 @@ Menu
 * **햄버거 메뉴 자체는 유지**: 기존 `<Menu><MenuItem Header="Menu">...</MenuItem></Menu>` 구조(§26.11)를 그대로 두고, 최상위 `MenuItem`의 `Header`만 텍스트 "Menu" 대신 `☰`(U+2630) 문자로 바꿔서 `<ToolBar>`의 첫 번째 자식으로 옮겼을 뿐이다 — `Files`/`Sentences`/`Words`/`Writing`/`Study` 하위 구조와 각 메뉴 항목의 동작(§26.11)은 전혀 바뀌지 않았다.
 * **되돌린 이유**: `WindowStyle="None"`으로 만든 커스텀 캡션 자체는 동작에 문제가 없었지만(스크린샷으로 메뉴 열기·최대화·정상 종료까지 확인함), 곧바로 "타이틀 바는 원래 윈도우 스타일로 복원해달라"는 요청을 받아 되돌렸다 — Windows 기본 타이틀바를 유지하는 쪽을 선호한다는 의미로 기록해둔다.
 * **다른 창들**: 문장/단어/영작 관리 창, 오늘의 영어 창은 이번 두 차례 변경 모두와 무관하다 — 처음부터 끝까지 Windows 기본 타이틀바를 그대로 쓴다.
+
+### 26.13 저장소 안 `data/` 폴더는 git 버전관리 대상에서 제외
+
+`.gitignore`에 `data/`를 추가해 이 폴더 전체를 버전관리 대상에서 뺐다(§26.10 이전까지는 반대로 "버전관리 대상으로 유지한다"고 되어 있었으나, 이번에 뒤집혔다). `today.md`(§27)처럼 사용자가 계속 손으로 편집하는 개인 작업 파일이 매번 diff에 잡히는 게 번거롭다는 이유다.
+
+* **이미 커밋되어 있던 파일**: `git rm --cached`로 git 추적에서만 뺐다 — 로컬 디스크의 실제 파일(`data/today.md`, `data/2026-08-22-todo.md`, `data/2026-08-22-expressions.md`, `data/2026-08-22.md`)은 그대로 남아 있고 앱도 평소처럼 계속 읽고 쓴다. 앞으로 이 폴더 안의 내용을 바꿔도 git에는 잡히지 않는다.
+* **예외 — 테스트 픽스처 2개는 `doc/`로 옮겨서 계속 커밋**: `tests/EntryMarkdownParserTests.cs`의 `InterpretationMarkdownParser_ParseMultiple_DataFile_ParsesEveryEntry`/`WritingMarkdownParser_ParseMultiple_DataFile_ParsesEveryEntry` 두 테스트가 `data/2026-08-22-word.md`/`data/2026-08-22-writings.md`를 실제 파일로 직접 읽어 18개 항목을 파싱하는지 검증하는데, 이 두 파일이 `data/`와 함께 버전관리에서 빠지면 저장소를 새로 복제(clone)한 환경에는 파일 자체가 없어 테스트가 실패한다. 그래서 이 두 파일만 [doc/sample-word-multi.md](sample-word-multi.md), [doc/sample-writings-multi.md](sample-writings-multi.md)로 옮기고(경로만 바뀌었을 뿐 내용은 그대로), 테스트의 파일 경로도 이 새 위치로 갱신했다 — 나머지 `data/` 파일들과 달리 이 둘은 "테스트가 참조하는 샘플 문서"라는 역할이라 `doc/sample-*.md` 관례(§6, §26.9 등)에 맞춰 커밋 대상으로 남긴다.
 
 ---
 

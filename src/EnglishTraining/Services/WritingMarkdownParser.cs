@@ -22,7 +22,7 @@ public static class WritingMarkdownParser
     }
 
     /// <summary>
-    /// Parses a file with multiple "### 단어" sections (e.g. data/2026-08-22-writings.md).
+    /// Parses a file with multiple "### 단어" sections (e.g. doc/sample-writings-multi.md).
     /// Each section's body becomes the Example value directly unless it uses explicit
     /// "설명:"/"예문:" labels. Falls back to the single-entry format when no "### "
     /// heading is present.

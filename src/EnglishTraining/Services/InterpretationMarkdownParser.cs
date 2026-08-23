@@ -23,7 +23,7 @@ public static class InterpretationMarkdownParser
     }
 
     /// <summary>
-    /// Parses a file with multiple "### 단어" sections (e.g. data/2026-08-22-word.md).
+    /// Parses a file with multiple "### 단어" sections (e.g. doc/sample-word-multi.md).
     /// Each section's body becomes the Ko value directly unless it uses an explicit
     /// "품사:"/"해석:"/"표현:" label (or "#### 품사"/"#### 해석"/"#### 표현" heading).
     /// Falls back to the single-entry format when no "### " heading is present.
