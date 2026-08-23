@@ -8,15 +8,12 @@ public static class PopupContentAssembler
         LearningExpression expression,
         bool showInterpretation,
         bool showWriting,
-        bool showExpression,
         out InterpretationInfo? interpretation,
-        out WritingInfo? writing,
-        out ExpressionInfo? expressionInfo)
+        out WritingInfo? writing)
     {
         interpretation = showInterpretation ? expression.Interpretation : null;
         writing = showWriting ? expression.Writing : null;
-        expressionInfo = showExpression ? expression.Expression : null;
 
-        return interpretation != null || writing != null || expressionInfo != null;
+        return interpretation != null || writing != null;
     }
 }

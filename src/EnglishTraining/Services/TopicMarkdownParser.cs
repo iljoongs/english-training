@@ -1,10 +1,9 @@
 using System.IO;
-using System.Text.RegularExpressions;
 using EnglishTraining.Models;
 
 namespace EnglishTraining.Services;
 
-public static partial class TopicMarkdownParser
+public static class TopicMarkdownParser
 {
     public static Topic Parse(string filePath)
     {
@@ -21,7 +20,7 @@ public static partial class TopicMarkdownParser
             : string.Empty;
 
         var bodyLines = titleLineIndex >= 0 ? lines.Skip(titleLineIndex + 1) : lines;
-        var text = CleanBody(string.Join("\n", bodyLines));
+        var text = MarkdownSectionSplitter.CleanBody(string.Join("\n", bodyLines));
 
         return new Topic { Id = Guid.NewGuid(), Title = title, Text = text };
     }
@@ -40,33 +39,15 @@ public static partial class TopicMarkdownParser
 
     public static List<Topic> ParseMultipleContent(string content)
     {
-        var lines = content.Replace("\r\n", "\n").Split('\n');
-
-        var sectionIndices = lines
-            .Select((line, index) => (line, index))
-            .Where(t => t.line.TrimStart().StartsWith("### "))
-            .Select(t => t.index)
-            .ToList();
-
-        if (sectionIndices.Count == 0)
+        var sections = MarkdownSectionSplitter.Split(content);
+        if (sections is null)
         {
             return [ParseContent(content)];
         }
 
-        var topics = new List<Topic>();
-        for (var i = 0; i < sectionIndices.Count; i++)
-        {
-            var start = sectionIndices[i];
-            var end = i + 1 < sectionIndices.Count ? sectionIndices[i + 1] : lines.Length;
-
-            var title = lines[start].TrimStart()[4..].Trim();
-            var bodyLines = lines[(start + 1)..end];
-            var text = CleanBody(string.Join("\n", bodyLines));
-
-            topics.Add(new Topic { Id = Guid.NewGuid(), Title = title, Text = text });
-        }
-
-        return topics;
+        return sections
+            .Select(s => new Topic { Id = Guid.NewGuid(), Title = s.Title, Text = s.Body })
+            .ToList();
     }
 
     public static string Format(Topic topic)
@@ -80,20 +61,18 @@ public static partial class TopicMarkdownParser
     }
 
     /// <summary>
-    /// Strips markdown link syntax (keeping only the link text) and trailing
-    /// hard-break spaces, then collapses runs of blank lines to a single one.
+    /// Formats every topic as its own "### 제목" section in one file (the
+    /// inverse of ParseMultiple), for the reading window's "Sentences &gt;
+    /// Export" (§29.4) — exports the whole list at once, not just one topic.
     /// </summary>
-    private static string CleanBody(string text)
+    public static string FormatMultiple(IReadOnlyList<Topic> topics, string headerTitle = "Sentences Export")
     {
-        var noLinks = MarkdownLinkRegex().Replace(text, "$1");
-        var trimmedLines = noLinks.Split('\n').Select(l => l.TrimEnd());
-        var collapsed = BlankLineRunRegex().Replace(string.Join("\n", trimmedLines), "\n\n");
-        return collapsed.Trim();
+        var sections = topics.Select(t => $"### {t.Title}\n{t.Text}\n");
+        return $"# {headerTitle}\n\n{string.Join("\n", sections)}";
     }
 
-    [GeneratedRegex(@"\[([^\]]+)\]\([^)]*\)")]
-    private static partial Regex MarkdownLinkRegex();
-
-    [GeneratedRegex(@"\n{3,}")]
-    private static partial Regex BlankLineRunRegex();
+    public static void ExportMultiple(IReadOnlyList<Topic> topics, string filePath, string headerTitle = "Sentences Export")
+    {
+        File.WriteAllText(filePath, FormatMultiple(topics, headerTitle));
+    }
 }

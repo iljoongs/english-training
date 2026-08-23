@@ -96,9 +96,9 @@ public class JsonTopicRepositoryTests
         var pathB = Path.Combine(Path.GetTempPath(), $"topics-{Guid.NewGuid()}.json");
         try
         {
-            var repoA = new JsonTopicRepository(pathA); // seeds "샘플" at pathA
+            var repoA = new JsonTopicRepository(pathA); // seeds "Sample" at pathA
 
-            var repoB = new JsonTopicRepository(pathB); // seeds "샘플" at pathB
+            var repoB = new JsonTopicRepository(pathB); // seeds "Sample" at pathB
             repoB.Add(new Topic { Id = Guid.NewGuid(), Title = "다른 파일 주제", Text = "text" });
             repoB.Save();
 

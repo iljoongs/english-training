@@ -8,16 +8,16 @@ namespace EnglishTraining.ViewModels;
 public sealed class EntryManagementViewModel<T> : ViewModelBase where T : class, IEntry, new()
 {
     private readonly IEntryRepository<T> _repository;
-    private readonly Func<string, T> _importParser;
+    private readonly Func<string, List<T>> _importParser;
     private readonly Action<T, string> _exporter;
     private T? _selectedEntry;
 
-    public EntryManagementViewModel(IEntryRepository<T> repository, Func<string, T> importParser, Action<T, string> exporter)
+    public EntryManagementViewModel(IEntryRepository<T> repository, Func<string, List<T>> importParser, Action<T, string> exporter)
     {
         _repository = repository;
         _importParser = importParser;
         _exporter = exporter;
-        Entries = new ObservableCollection<T>(repository.Entries);
+        Entries = new ObservableCollection<T>(repository.Entries.OrderBy(e => e.Text, StringComparer.OrdinalIgnoreCase));
         _selectedEntry = Entries.FirstOrDefault();
     }
 
@@ -58,21 +58,50 @@ public sealed class EntryManagementViewModel<T> : ViewModelBase where T : class,
         return entry;
     }
 
-    public T AddEntryFromFile(string filePath)
+    public List<T> AddEntriesFromFile(string filePath)
     {
-        var entry = _importParser(filePath);
-        _repository.Add(entry);
+        var entries = _importParser(filePath);
+
+        foreach (var entry in entries)
+        {
+            _repository.Add(entry);
+            Entries.Add(entry);
+        }
+
         _repository.Save();
         NotifyFileStatusChanged();
 
-        Entries.Add(entry);
-        SelectedEntry = entry;
-        return entry;
+        SelectedEntry = entries.FirstOrDefault();
+        return entries;
     }
 
     public void ExportEntry(T entry, string filePath)
     {
         _exporter(entry, filePath);
+    }
+
+    public void SortAscending()
+    {
+        Reorder(Entries.OrderBy(e => e.Text, StringComparer.OrdinalIgnoreCase));
+    }
+
+    public void SortDescending()
+    {
+        Reorder(Entries.OrderByDescending(e => e.Text, StringComparer.OrdinalIgnoreCase));
+    }
+
+    private void Reorder(IEnumerable<T> ordered)
+    {
+        var selected = SelectedEntry;
+        var sorted = ordered.ToList();
+
+        Entries.Clear();
+        foreach (var entry in sorted)
+        {
+            Entries.Add(entry);
+        }
+
+        SelectedEntry = selected;
     }
 
     public void DeleteEntries(IEnumerable<T> entries)
@@ -115,7 +144,7 @@ public sealed class EntryManagementViewModel<T> : ViewModelBase where T : class,
         _repository.Open(filePath);
 
         Entries.Clear();
-        foreach (var entry in _repository.Entries)
+        foreach (var entry in _repository.Entries.OrderBy(e => e.Text, StringComparer.OrdinalIgnoreCase))
         {
             Entries.Add(entry);
         }

@@ -4,7 +4,7 @@ namespace EnglishTraining.Views;
 
 public partial class NewTopicDialog : Window
 {
-    public NewTopicDialog(string windowTitle = "새 주제 추가", string labelText = "주제명")
+    public NewTopicDialog(string windowTitle = "Add New Topic", string labelText = "Topic Name")
     {
         InitializeComponent();
         Title = windowTitle;
@@ -19,7 +19,7 @@ public partial class NewTopicDialog : Window
         var text = TitleTextBox.Text.Trim();
         if (string.IsNullOrEmpty(text))
         {
-            MessageBox.Show(this, "값을 입력하세요.", "알림", MessageBoxButton.OK, MessageBoxImage.Warning);
+            MessageBox.Show(this, "Please enter a value.", "Notice", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
 

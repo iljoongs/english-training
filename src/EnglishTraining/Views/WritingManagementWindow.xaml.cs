@@ -16,7 +16,7 @@ public partial class WritingManagementWindow : Window
         InitializeComponent();
 
         _viewModel = new EntryManagementViewModel<WritingEntry>(
-            repository, WritingMarkdownParser.Parse, WritingMarkdownParser.Export);
+            repository, WritingMarkdownParser.ParseMultiple, WritingMarkdownParser.Export);
         DataContext = _viewModel;
 
         Closing += (_, _) => _viewModel.SaveCurrentEntry();
@@ -24,7 +24,7 @@ public partial class WritingManagementWindow : Window
 
     private void OnAddNewClick(object sender, RoutedEventArgs e)
     {
-        var dialog = new NewTopicDialog("새 영작 추가", "표현") { Owner = this };
+        var dialog = new NewTopicDialog("Add New Writing", "Expression") { Owner = this };
         if (dialog.ShowDialog() == true)
         {
             _viewModel.AddEntry(dialog.EnteredText);
@@ -41,8 +41,8 @@ public partial class WritingManagementWindow : Window
 
         var result = MessageBox.Show(
             this,
-            $"선택한 항목 {selected.Count}개를 삭제하시겠습니까?",
-            "삭제 확인",
+            $"Delete the selected {selected.Count} item(s)?",
+            "Confirm Delete",
             MessageBoxButton.YesNo,
             MessageBoxImage.Warning);
 
@@ -54,10 +54,10 @@ public partial class WritingManagementWindow : Window
 
     private void OnImportClick(object sender, RoutedEventArgs e)
     {
-        var dialog = new OpenFileDialog { Filter = "Markdown 파일 (*.md)|*.md", CheckFileExists = true };
+        var dialog = new OpenFileDialog { Filter = "Markdown files (*.md)|*.md", CheckFileExists = true };
         if (dialog.ShowDialog(this) == true)
         {
-            _viewModel.AddEntryFromFile(dialog.FileName);
+            _viewModel.AddEntriesFromFile(dialog.FileName);
         }
     }
 
@@ -65,11 +65,11 @@ public partial class WritingManagementWindow : Window
     {
         if (EntriesListBox.SelectedItem is not WritingEntry entry)
         {
-            MessageBox.Show(this, "내보낼 항목을 선택하세요.", "알림", MessageBoxButton.OK, MessageBoxImage.Warning);
+            MessageBox.Show(this, "Please select an item to export.", "Notice", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
 
-        var dialog = new SaveFileDialog { Filter = "Markdown 파일 (*.md)|*.md", FileName = $"{entry.Text}.md" };
+        var dialog = new SaveFileDialog { Filter = "Markdown files (*.md)|*.md", FileName = $"{entry.Text}.md" };
         if (dialog.ShowDialog(this) == true)
         {
             _viewModel.ExportEntry(entry, dialog.FileName);
@@ -78,7 +78,7 @@ public partial class WritingManagementWindow : Window
 
     private void OnFileOpenClick(object sender, RoutedEventArgs e)
     {
-        var dialog = new OpenFileDialog { Filter = "영작 관리 파일 (*.json)|*.json", CheckFileExists = true };
+        var dialog = new OpenFileDialog { Filter = "Writing data (*.json)|*.json", CheckFileExists = true };
         if (dialog.ShowDialog(this) == true)
         {
             _viewModel.OpenFile(dialog.FileName);
@@ -92,10 +92,20 @@ public partial class WritingManagementWindow : Window
 
     private void OnFileSaveAsClick(object sender, RoutedEventArgs e)
     {
-        var dialog = new SaveFileDialog { Filter = "영작 관리 파일 (*.json)|*.json", FileName = "writings.json" };
+        var dialog = new SaveFileDialog { Filter = "Writing data (*.json)|*.json", FileName = "writings.json" };
         if (dialog.ShowDialog(this) == true)
         {
             _viewModel.SaveFileAs(dialog.FileName);
         }
+    }
+
+    private void OnSortAscendingClick(object sender, RoutedEventArgs e)
+    {
+        _viewModel.SortAscending();
+    }
+
+    private void OnSortDescendingClick(object sender, RoutedEventArgs e)
+    {
+        _viewModel.SortDescending();
     }
 }

@@ -26,7 +26,7 @@ public sealed class JsonTopicRepository : ITopicRepository
         }
         else
         {
-            _topics = [new Topic { Id = Guid.NewGuid(), Title = "샘플", Text = DefaultSampleText }];
+            _topics = [new Topic { Id = Guid.NewGuid(), Title = "Sample", Text = DefaultSampleText }];
             Save();
         }
     }

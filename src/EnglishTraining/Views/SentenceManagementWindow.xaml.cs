@@ -36,7 +36,7 @@ public partial class SentenceManagementWindow : Window
     {
         var dialog = new OpenFileDialog
         {
-            Filter = "Markdown 파일 (*.md)|*.md",
+            Filter = "Markdown files (*.md)|*.md",
             CheckFileExists = true,
         };
 
@@ -56,8 +56,8 @@ public partial class SentenceManagementWindow : Window
 
         var result = MessageBox.Show(
             this,
-            $"선택한 주제 {selected.Count}개를 삭제하시겠습니까?",
-            "삭제 확인",
+            $"Delete the selected {selected.Count} topic(s)?",
+            "Confirm Delete",
             MessageBoxButton.YesNo,
             MessageBoxImage.Warning);
 
@@ -81,7 +81,7 @@ public partial class SentenceManagementWindow : Window
     {
         var dialog = new OpenFileDialog
         {
-            Filter = "문장 관리 파일 (*.json)|*.json",
+            Filter = "Sentence data (*.json)|*.json",
             CheckFileExists = true,
         };
 
@@ -100,7 +100,7 @@ public partial class SentenceManagementWindow : Window
     {
         var dialog = new SaveFileDialog
         {
-            Filter = "문장 관리 파일 (*.json)|*.json",
+            Filter = "Sentence data (*.json)|*.json",
             FileName = "topics.json",
         };
 
@@ -114,13 +114,13 @@ public partial class SentenceManagementWindow : Window
     {
         if (TopicsListBox.SelectedItem is not TopicViewModel topic)
         {
-            MessageBox.Show(this, "내보낼 주제를 선택하세요.", "알림", MessageBoxButton.OK, MessageBoxImage.Warning);
+            MessageBox.Show(this, "Please select a topic to export.", "Notice", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
 
         var dialog = new SaveFileDialog
         {
-            Filter = "Markdown 파일 (*.md)|*.md",
+            Filter = "Markdown files (*.md)|*.md",
             FileName = $"{topic.Title}.md",
         };
 

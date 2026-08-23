@@ -17,13 +17,13 @@ public partial class App : Application
             AppDataPaths.Resolve("interpretations.json"), DefaultLearningData.Interpretations());
         var writingRepository = new JsonEntryRepository<WritingEntry>(
             AppDataPaths.Resolve("writings.json"), DefaultLearningData.Writings());
-        var expressionEntryRepository = new JsonEntryRepository<ExpressionEntry>(
-            AppDataPaths.Resolve("expressions.json"), DefaultLearningData.Expressions());
 
         var expressionRepository = JsonExpressionRepository.LoadFromEntries(
-            interpretationRepository.Entries, writingRepository.Entries, expressionEntryRepository.Entries);
+            interpretationRepository.Entries, writingRepository.Entries);
 
-        var initialTopic = topicRepository.Topics.FirstOrDefault();
+        var settingsStore = AppSettingsStore.CreateDefault();
+        var initialTopic = topicRepository.Topics.FirstOrDefault(t => t.Id == settingsStore.LastSelectedTopicId)
+            ?? topicRepository.Topics.FirstOrDefault();
 
         var window = new ReadingWindow(
             initialTopic,
@@ -31,7 +31,20 @@ public partial class App : Application
             topicRepository,
             interpretationRepository,
             writingRepository,
-            expressionEntryRepository);
+            settingsStore);
+
+        if (settingsStore.WindowWidth is { } width && settingsStore.WindowHeight is { } height)
+        {
+            window.Width = width;
+            window.Height = height;
+        }
+
+        if (settingsStore.WindowLeft is { } left && settingsStore.WindowTop is { } top)
+        {
+            window.Left = left;
+            window.Top = top;
+        }
+
         MainWindow = window;
         window.Show();
     }

@@ -32,14 +32,15 @@
 
 ## 4. 제네릭/추상화 사용 기준
 
-똑같은 구조(예: `Id` + `Text` + 카테고리별 필드를 가진 JSON 목록을 CRUD하는 창)가 **3개 이상 동시에 필요할 때만** 제네릭으로 묶는다(`IEntry`, `JsonEntryRepository<T>`, `EntryManagementViewModel<T>` — 해석/영작/표현 관리 창 3개가 동시에 생기면서 도입). 그 외에는 중복을 감수하더라도 구체 클래스로 둔다 — 아직 쓰이지 않는 유연성을 미리 만들지 않는다. `문장 관리`(`Topic`/`ITopicRepository`/`JsonTopicRepository`)는 하나뿐이라 지금도 제네릭으로 통합하지 않는다.
+똑같은 구조(예: `Id` + `Text` + 카테고리별 필드를 가진 JSON 목록을 CRUD하는 창)가 **3개 이상 동시에 필요할 때만** 제네릭으로 묶는다(`IEntry`, `JsonEntryRepository<T>`, `EntryManagementViewModel<T>` — 해석/영작/표현 관리 창 3개가 동시에 생기면서 도입). 그 외에는 중복을 감수하더라도 구체 클래스로 둔다 — 아직 쓰이지 않는 유연성을 미리 만들지 않는다. `문장 관리`(`Topic`/`ITopicRepository`/`JsonTopicRepository`)는 하나뿐이라 지금도 제네릭으로 통합하지 않는다. (표현 관리 창은 이후 제거되어 지금은 해석/영작 2개만 이 제네릭을 쓰지만, 이미 만들어져 잘 동작하는 코드를 이 규칙 때문에 다시 구체 클래스로 되돌리지는 않았다 — 이 규칙은 "새로 만들 때"의 기준이지 기존 코드를 소급 적용하는 기준이 아니다.)
 
 ## 5. 데이터 저장
 
 * JSON 직렬화는 `System.Text.Json`, `WriteIndented = true`.
-* 사용자가 앱 내에서 추가/수정/삭제하는 데이터(주제, 해석/영작/표현)는 `%LOCALAPPDATA%\EnglishTraining\*.json`에 저장한다 — 실행 파일 상대 경로(`./data`)를 쓰지 않는다(설치 위치·실행 디렉터리에 영향받지 않도록).
-* 저장소 안 `data/`, `doc/sample-*.md` 등은 가져오기(import)용 예시/원본 텍스트일 뿐 앱이 쓰고 지우는 상태 파일이 아니다.
+* 사용자가 앱 내에서 추가/수정/삭제하는 데이터(주제, 해석/영작)는 `%LOCALAPPDATA%\EnglishTraining\*.json`에 저장한다 — 실행 파일 상대 경로(`./data`)를 쓰지 않는다(설치 위치·실행 디렉터리에 영향받지 않도록).
+* 저장소 안 `data/`, `doc/sample-*.md` 등은 기본적으로 가져오기(import)용 예시/원본 텍스트이지 앱이 관리하는 상태 파일이 아니다. 단, "단어/문장 등록"처럼 저장소 안 `data/`에 결과를 남기는 것 자체가 목적인 기능은 예외로 `RepoPaths.FindDataDirectory()`로 리포 루트를 찾아 `data/`에 직접 쓴다(예: `TodayEnglishFile` → `data/today.md`, §27 참고) — 이 경우도 실행 파일 상대 경로가 아니라 `EnglishTraining.sln` 위치 기준으로 찾는다.
 * 파일 저장소 클래스(`Json*Repository`)는 `FilePath`, `Save()`, `SaveAs(path)`, `Open(path)`를 공통으로 제공한다.
+* API 키 등 시크릿이 필요한 기능을 추가할 때는 코드에 하드코딩하거나 저장소(git)에 커밋하지 않는다. 사용자가 앱 내 설정 창을 통해 입력하고 `AppSettingsStore`(`%LOCALAPPDATA%\EnglishTraining\settings.json`)에만 저장하는 방식을 따른다 (계획 중인 예: 실시간 번역 기능, [doc/common-management.md](common-management.md) §26.5 참고 — 현재는 보류 상태로 코드에는 없음).
 
 ## 6. 텍스트/파일 파싱
 

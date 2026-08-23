@@ -1,3 +1,4 @@
+using System.IO;
 using System.Linq;
 using System.Windows;
 using EnglishTraining.Models;
@@ -16,7 +17,7 @@ public partial class InterpretationManagementWindow : Window
         InitializeComponent();
 
         _viewModel = new EntryManagementViewModel<InterpretationEntry>(
-            repository, InterpretationMarkdownParser.Parse, InterpretationMarkdownParser.Export);
+            repository, InterpretationMarkdownParser.ParseAny, InterpretationMarkdownParser.Export);
         DataContext = _viewModel;
 
         Closing += (_, _) => _viewModel.SaveCurrentEntry();
@@ -24,7 +25,7 @@ public partial class InterpretationManagementWindow : Window
 
     private void OnAddNewClick(object sender, RoutedEventArgs e)
     {
-        var dialog = new NewTopicDialog("새 해석 추가", "표현") { Owner = this };
+        var dialog = new NewTopicDialog("Add New Word", "Word/Idiom") { Owner = this };
         if (dialog.ShowDialog() == true)
         {
             _viewModel.AddEntry(dialog.EnteredText);
@@ -41,8 +42,8 @@ public partial class InterpretationManagementWindow : Window
 
         var result = MessageBox.Show(
             this,
-            $"선택한 항목 {selected.Count}개를 삭제하시겠습니까?",
-            "삭제 확인",
+            $"Delete the selected {selected.Count} item(s)?",
+            "Confirm Delete",
             MessageBoxButton.YesNo,
             MessageBoxImage.Warning);
 
@@ -54,22 +55,47 @@ public partial class InterpretationManagementWindow : Window
 
     private void OnImportClick(object sender, RoutedEventArgs e)
     {
-        var dialog = new OpenFileDialog { Filter = "Markdown 파일 (*.md)|*.md", CheckFileExists = true };
+        var dialog = new OpenFileDialog { Filter = "Markdown files (*.md)|*.md", CheckFileExists = true };
         if (dialog.ShowDialog(this) == true)
         {
-            _viewModel.AddEntryFromFile(dialog.FileName);
+            _viewModel.AddEntriesFromFile(dialog.FileName);
         }
+    }
+
+    private void OnPreviewDragOver(object sender, DragEventArgs e)
+    {
+        if (e.Data.GetDataPresent(DataFormats.FileDrop))
+        {
+            e.Effects = DragDropEffects.Copy;
+            e.Handled = true;
+        }
+    }
+
+    private void OnPreviewFileDrop(object sender, DragEventArgs e)
+    {
+        if (!e.Data.GetDataPresent(DataFormats.FileDrop))
+        {
+            return;
+        }
+
+        var paths = (string[])e.Data.GetData(DataFormats.FileDrop);
+        foreach (var path in paths.Where(p => Path.GetExtension(p).Equals(".md", StringComparison.OrdinalIgnoreCase)))
+        {
+            _viewModel.AddEntriesFromFile(path);
+        }
+
+        e.Handled = true;
     }
 
     private void OnExportClick(object sender, RoutedEventArgs e)
     {
         if (EntriesListBox.SelectedItem is not InterpretationEntry entry)
         {
-            MessageBox.Show(this, "내보낼 항목을 선택하세요.", "알림", MessageBoxButton.OK, MessageBoxImage.Warning);
+            MessageBox.Show(this, "Please select an item to export.", "Notice", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
 
-        var dialog = new SaveFileDialog { Filter = "Markdown 파일 (*.md)|*.md", FileName = $"{entry.Text}.md" };
+        var dialog = new SaveFileDialog { Filter = "Markdown files (*.md)|*.md", FileName = $"{entry.Text}.md" };
         if (dialog.ShowDialog(this) == true)
         {
             _viewModel.ExportEntry(entry, dialog.FileName);
@@ -78,7 +104,7 @@ public partial class InterpretationManagementWindow : Window
 
     private void OnFileOpenClick(object sender, RoutedEventArgs e)
     {
-        var dialog = new OpenFileDialog { Filter = "해석 관리 파일 (*.json)|*.json", CheckFileExists = true };
+        var dialog = new OpenFileDialog { Filter = "Word data (*.json)|*.json", CheckFileExists = true };
         if (dialog.ShowDialog(this) == true)
         {
             _viewModel.OpenFile(dialog.FileName);
@@ -92,10 +118,20 @@ public partial class InterpretationManagementWindow : Window
 
     private void OnFileSaveAsClick(object sender, RoutedEventArgs e)
     {
-        var dialog = new SaveFileDialog { Filter = "해석 관리 파일 (*.json)|*.json", FileName = "interpretations.json" };
+        var dialog = new SaveFileDialog { Filter = "Word data (*.json)|*.json", FileName = "interpretations.json" };
         if (dialog.ShowDialog(this) == true)
         {
             _viewModel.SaveFileAs(dialog.FileName);
         }
+    }
+
+    private void OnSortAscendingClick(object sender, RoutedEventArgs e)
+    {
+        _viewModel.SortAscending();
+    }
+
+    private void OnSortDescendingClick(object sender, RoutedEventArgs e)
+    {
+        _viewModel.SortDescending();
     }
 }

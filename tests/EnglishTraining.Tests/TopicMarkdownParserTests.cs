@@ -1,3 +1,4 @@
+using EnglishTraining.Models;
 using EnglishTraining.Services;
 
 namespace EnglishTraining.Tests;
@@ -55,6 +56,25 @@ public class TopicMarkdownParserTests
 
         Assert.Equal("일상 대화", topic.Title);
         Assert.Contains("look forward to seeing you soon.", topic.Text);
+    }
+
+    [Fact]
+    public void FormatMultiple_ThenParseMultipleContent_RoundTrips()
+    {
+        var topics = new List<Topic>
+        {
+            new() { Id = Guid.NewGuid(), Title = "Daily Chat", Text = "I look forward to seeing you." },
+            new() { Id = Guid.NewGuid(), Title = "Business English", Text = "As far as I know, the meeting is tomorrow." },
+        };
+
+        var formatted = TopicMarkdownParser.FormatMultiple(topics);
+        var reparsed = TopicMarkdownParser.ParseMultipleContent(formatted);
+
+        Assert.Equal(2, reparsed.Count);
+        Assert.Equal("Daily Chat", reparsed[0].Title);
+        Assert.Equal("I look forward to seeing you.", reparsed[0].Text);
+        Assert.Equal("Business English", reparsed[1].Title);
+        Assert.Equal("As far as I know, the meeting is tomorrow.", reparsed[1].Text);
     }
 
     private static string FindRepoRoot()

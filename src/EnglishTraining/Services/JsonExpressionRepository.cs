@@ -23,20 +23,20 @@ public sealed class JsonExpressionRepository : IExpressionRepository
 
     public static JsonExpressionRepository LoadFromEntries(
         IReadOnlyList<InterpretationEntry> interpretations,
-        IReadOnlyList<WritingEntry> writings,
-        IReadOnlyList<ExpressionEntry> expressions)
+        IReadOnlyList<WritingEntry> writings)
     {
         var interpretationsByKey = interpretations
             .GroupBy(e => TextNormalizer.Normalize(e.Text))
-            .ToDictionary(g => g.Key, g => new InterpretationInfo { Ko = g.Last().Ko });
+            .ToDictionary(g => g.Key, g => new InterpretationInfo
+            {
+                PartOfSpeech = g.Last().PartOfSpeech,
+                Ko = g.Last().Ko,
+                Expression = g.Last().Expression,
+            });
 
         var writingsByKey = writings
             .GroupBy(e => TextNormalizer.Normalize(e.Text))
             .ToDictionary(g => g.Key, g => new WritingInfo { Description = g.Last().Description, Example = g.Last().Example });
-
-        var expressionsByKey = expressions
-            .GroupBy(e => TextNormalizer.Normalize(e.Text))
-            .ToDictionary(g => g.Key, g => new ExpressionInfo { Meaning = g.Last().Meaning, Usage = g.Last().Usage, Example = g.Last().Example });
 
         var textByKey = new Dictionary<string, string>();
         foreach (var entry in interpretations)
@@ -49,17 +49,11 @@ public sealed class JsonExpressionRepository : IExpressionRepository
             textByKey.TryAdd(TextNormalizer.Normalize(entry.Text), entry.Text);
         }
 
-        foreach (var entry in expressions)
-        {
-            textByKey.TryAdd(TextNormalizer.Normalize(entry.Text), entry.Text);
-        }
-
         var merged = textByKey.Select(kvp => new LearningExpression
         {
             Text = kvp.Value,
             Interpretation = interpretationsByKey.GetValueOrDefault(kvp.Key),
             Writing = writingsByKey.GetValueOrDefault(kvp.Key),
-            Expression = expressionsByKey.GetValueOrDefault(kvp.Key),
         }).ToList();
 
         return new JsonExpressionRepository(merged);
