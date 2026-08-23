@@ -32,9 +32,7 @@
 
 ```text
 ┌──────────────────────────────────────────────┐
-│ Menu                                          │
-├──────────────────────────────────────────────┤
-│ ☑단어 ☐영작  글꼴 줄간격 여백 테마 …          │
+│ ☰  ☑단어 ☐영작  글꼴 줄간격 여백 테마 …       │
 ├───────────────┬──────────────────────────────┤
 │ 일상 대화      │ I was wondering if you could  │
 │ 비즈니스 영어  │ help me with this problem.    │
@@ -44,7 +42,7 @@
 └───────────────┴──────────────────────────────┘
 ```
 
-`Menu`를 펼치면 `Files`/`Sentences`/`Words`/`Writing`/`Study` 하위 메뉴가 있다. `Sentences`/`Words`/`Writing`은 각각 `Setting`(해당 관리 창 열기) / `Import` / `Export`(§26.11)로 구성된다. 주제(문장) 관리 창은 `Menu > Sentences > Setting`으로 연다([expression-management.md](expression-management.md) 참고).
+상단 툴바 맨 앞의 햄버거 아이콘(☰, `Menu`)을 펼치면 `Files`/`Sentences`/`Words`/`Writing`/`Study` 하위 메뉴가 있다(윈도우 타이틀바 자체는 Windows 기본 스타일이다 — 공통 관리 §26.12). `Sentences`/`Words`/`Writing`은 각각 `Setting`(해당 관리 창 열기) / `Import` / `Export`(§26.11)로 구성된다. 주제(문장) 관리 창은 `Menu > Sentences > Setting`으로 연다([expression-management.md](expression-management.md) 참고).
 
 * 왼쪽: 등록된 주제 목록(읽기 전용 탐색용, 단일 선택). 클릭하면 그 주제의 본문이 오른쪽에 즉시 표시된다.
 * 오른쪽: 현재 선택된 주제의 본문 텍스트 — 마우스 오버 학습 팝업이 동작하는 영역([공통 관리](common-management.md) 참고).

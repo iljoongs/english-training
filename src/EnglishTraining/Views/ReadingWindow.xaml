@@ -4,36 +4,37 @@
         Title="English Training" Height="520" Width="840"
         Icon="pack://application:,,,/Assets/english-training.png">
     <DockPanel>
-        <Menu DockPanel.Dock="Top">
-            <MenuItem Header="Menu">
-                <MenuItem Header="Files">
-                    <MenuItem Header="Load" Click="OnFilesLoadClick" />
-                    <MenuItem Header="Save" Click="OnFilesSaveClick" />
-                    <MenuItem Header="Save As" Click="OnFilesSaveAsClick" />
-                </MenuItem>
-                <MenuItem Header="Sentences">
-                    <MenuItem Header="Setting" Click="OnManageTopicsClick" />
-                    <MenuItem Header="Import" Click="OnSentencesImportClick" />
-                    <MenuItem Header="Export" Click="OnSentencesExportClick" />
-                </MenuItem>
-                <MenuItem Header="Words">
-                    <MenuItem Header="Setting" Click="OnManageInterpretationsClick" />
-                    <MenuItem Header="Import" Click="OnWordsImportClick" />
-                    <MenuItem Header="Export" Click="OnWordsExportClick" />
-                </MenuItem>
-                <MenuItem Header="Writing">
-                    <MenuItem Header="Setting" Click="OnManageWritingsClick" />
-                    <MenuItem Header="Import" Click="OnWritingImportClick" />
-                    <MenuItem Header="Export" Click="OnWritingExportClick" />
-                </MenuItem>
-                <MenuItem Header="Study">
-                    <MenuItem Header="Today's English" Click="OnTodayEnglishClick" />
-                    <MenuItem Header="Import" Click="OnImportTodayEnglishClick" />
-                </MenuItem>
-            </MenuItem>
-        </Menu>
-
         <ToolBar DockPanel.Dock="Top">
+            <Menu Background="Transparent" VerticalAlignment="Center">
+                <MenuItem Header="&#9776;" FontSize="14" Padding="6,0">
+                    <MenuItem Header="Files">
+                        <MenuItem Header="Load" Click="OnFilesLoadClick" />
+                        <MenuItem Header="Save" Click="OnFilesSaveClick" />
+                        <MenuItem Header="Save As" Click="OnFilesSaveAsClick" />
+                    </MenuItem>
+                    <MenuItem Header="Sentences">
+                        <MenuItem Header="Setting" Click="OnManageTopicsClick" />
+                        <MenuItem Header="Import" Click="OnSentencesImportClick" />
+                        <MenuItem Header="Export" Click="OnSentencesExportClick" />
+                    </MenuItem>
+                    <MenuItem Header="Words">
+                        <MenuItem Header="Setting" Click="OnManageInterpretationsClick" />
+                        <MenuItem Header="Import" Click="OnWordsImportClick" />
+                        <MenuItem Header="Export" Click="OnWordsExportClick" />
+                    </MenuItem>
+                    <MenuItem Header="Writing">
+                        <MenuItem Header="Setting" Click="OnManageWritingsClick" />
+                        <MenuItem Header="Import" Click="OnWritingImportClick" />
+                        <MenuItem Header="Export" Click="OnWritingExportClick" />
+                    </MenuItem>
+                    <MenuItem Header="Study">
+                        <MenuItem Header="Today's English" Click="OnTodayEnglishClick" />
+                        <MenuItem Header="Import" Click="OnImportTodayEnglishClick" />
+                    </MenuItem>
+                </MenuItem>
+            </Menu>
+
+            <Separator />
             <CheckBox Content="Word" VerticalAlignment="Center" IsChecked="{Binding ShowInterpretation}" />
             <CheckBox Content="Writing" VerticalAlignment="Center" IsChecked="{Binding ShowWriting}" />
 
