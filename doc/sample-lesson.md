@@ -1,5 +1,7 @@
 # 2026-09-27
 
+> **구현 예정** 기능(`Files > Import All`)의 샘플이다 — [common-management.md](common-management.md) §30.
+
 ## Working from Home
 
 ### Text

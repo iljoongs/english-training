@@ -1,5 +1,4 @@
 using System.Collections.ObjectModel;
-using System.IO;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
@@ -380,39 +379,6 @@ public partial class ReadingWindow : Window
         {
             _topicRepository.SaveAs(dialog.FileName);
         }
-    }
-
-    private void OnFilesImportAllClick(object sender, RoutedEventArgs e)
-    {
-        var dialog = new OpenFileDialog { Filter = "Markdown files (*.md)|*.md", CheckFileExists = true };
-        if (dialog.ShowDialog(this) != true)
-        {
-            return;
-        }
-
-        var result = LessonImportService.ImportContent(
-            File.ReadAllText(dialog.FileName),
-            _topicRepository,
-            _interpretationRepository,
-            _writingRepository);
-
-        if (result.TopicsAdded > 0)
-        {
-            RefreshTopics();
-        }
-
-        if (result.WordsAdded > 0 || result.WritingsAdded > 0)
-        {
-            RefreshExpressionData();
-        }
-
-        MessageBox.Show(
-            this,
-            $"Added {result.TopicsAdded} sentence topic(s), {result.WordsAdded} word(s), {result.WritingsAdded} writing entry(ies).\n" +
-            $"Skipped as duplicates: {result.DuplicatesSkipped}",
-            "Import Complete",
-            MessageBoxButton.OK,
-            MessageBoxImage.Information);
     }
 
     private void OnSentencesImportClick(object sender, RoutedEventArgs e)

@@ -757,7 +757,7 @@ went to
 
 ```text
 Menu
-├─ Files      Load / Save / Save As / Import All (§30)
+├─ Files      Load / Save / Save As   (+ Import All — 구현 예정, §30)
 ├─ Sentences  Setting / Import / Export
 ├─ Words      Setting / Import / Export
 ├─ Writing    Setting / Import / Export
@@ -879,7 +879,9 @@ wondering if
 
 ---
 
-## 30. "Files > Import All" (레슨 파일 → 문장·단어·영작 한 번에)
+## 30. "Files > Import All" (레슨 파일 → 문장·단어·영작 한 번에) — **구현 예정**
+
+> **상태: 미구현.** 아래는 확정된 사양이며, 코드는 아직 없다. 구현 시 이 절을 기준으로 하고, 완료되면 이 상태 표시를 지운다.
 
 문장/단어/영작을 각각 `Import`하려면 파일 세 개를 따로 만들어 세 번 가져와야 했다. 이를 줄이기 위해 **기사 하나 아래에 그 기사의 본문·단어·영작을 함께 묶는 "레슨 파일"** 형식을 추가하고, 읽기 창 `Menu > Files > Import All`로 한 번에 세 저장소에 넣는다. 기존 `Sentences`/`Words`/`Writing`의 `Import`는 그대로 둔다.
 
@@ -917,7 +919,7 @@ commute | I commute by bus.
 * `LessonImportService.ImportContent`가 세 저장소에 추가한다. **중복 처리**: 주제는 같은 제목(대소문자 무시), 단어/영작은 같은 정규화 텍스트(`TextNormalizer`, §14)가 이미 있거나 이번 가져오기에서 먼저 추가됐으면 건너뛴다 — §29와 같이 같은 파일을 여러 번 가져와도 안전하다. 새 항목이 있는 저장소만 `Save()`한다.
 * 가져오기가 끝나면 주제 목록과 학습 팝업 데이터를 다시 반영하고, "주제 N개, 단어 N개, 영작 N개 추가 / 중복 K개 건너뜀" 메시지를 보여준다.
 
-### 30.3 구현 위치
+### 30.3 구현 위치 (예정)
 
-* `Services/LessonMarkdownParser.cs`, `Services/LessonImportService.cs`, `Models/LessonImportResult.cs`, `Views/ReadingWindow.xaml(.cs)`의 `OnFilesImportAllClick`
-* 테스트: `LessonImportTests`(기사별 분리, 링크 정리, `표현 | 예문` 2칸 형식, 중복 스킵, 저장 라운드트립, 반복 실행 시 멱등성)
+* 예정 구성: `Services/LessonMarkdownParser.cs`(Words 줄은 `TodayEnglishParser` 재사용, 본문은 `MarkdownSectionSplitter.CleanBody` 재사용), `Services/LessonImportService.cs`, `Models/LessonImportResult.cs`, `Views/ReadingWindow.xaml(.cs)`의 `OnFilesImportAllClick`
+* 예정 테스트: `LessonImportTests`(기사별 분리, 링크 정리, `표현 | 예문` 2칸 형식, 중복 스킵, 저장 라운드트립, 반복 실행 시 멱등성)
