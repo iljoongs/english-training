@@ -12,16 +12,26 @@
 
 상세 규칙은 아래 세 보조 지시서로 분리되어 있다. 구현/수정 작업 시 해당 문서를 함께 확인한다.
 
-* **[doc/common-management.md](doc/common-management.md)** — 글자 크기 조절, 마우스 오버 학습 팝업의 표시 조건·동작·데이터 구조·매칭 우선순위·예외 처리·완료 기준 등 기능 전반에 공통으로 적용되는 규칙. 확정된 기술 스택/구현 결정 사항도 이 문서 끝(§26)에 있다.
-* **[doc/sentence-management.md](doc/sentence-management.md)** — "문장 관리" 창(주제별 예문 추가/수정/삭제, md 파일로 가져오기)과 읽기 창(학습 리딩 화면) 사이의 연결 방법.
-* **[doc/expression-management.md](doc/expression-management.md)** — 단어(해석)/영작 데이터를 각각 관리하는 "단어 관리"/"영작 관리" 창과, 읽기 창이 두 파일을 병합해 학습 팝업에 반영하는 방법.
+* **[doc/common-management.md](doc/common-management.md)** — 글자 크기 조절, 마우스 오버 학습 팝업의 표시 조건·동작·데이터 구조·매칭 우선순위·예외 처리·완료 기준 등 기능 전반에 공통으로 적용되는 규칙. 확정된 기술 스택/구현 결정 사항은 §26 이후에 있고, 레슨 파일 형식은 §30, 읽기 전용 전환과 `Settings` 창은 §31이다.
+* **[doc/sentence-management.md](doc/sentence-management.md)** — (§31에 따라 제거 예정) "문장 관리" 창(주제별 예문 추가/수정/삭제, md 파일로 가져오기)과 읽기 창(학습 리딩 화면) 사이의 연결 방법.
+* **[doc/expression-management.md](doc/expression-management.md)** — (§31에 따라 제거 예정) 단어(해석)/영작 데이터를 각각 관리하는 "단어 관리"/"영작 관리" 창과, 읽기 창이 두 파일을 병합해 학습 팝업에 반영하는 방법.
 * **[doc/coding-convention.md](doc/coding-convention.md)** — 네이밍, 계층 책임(MVVM), 제네릭 사용 기준, 데이터 저장·파싱 규칙, 테스트/커밋 컨벤션.
 
 ---
 
 ## 3. 구현 현황 (참고)
 
-WPF(.NET) 데스크톱 앱으로 구현되어 있다 (`src/EnglishTraining`, 테스트는 `tests/EnglishTraining.Tests`). 앱 실행 시 읽기 창(학습 리딩 화면)이 메인 윈도우로 열리며, 이 읽기 창은 앱 전체에서 하나만 존재한다. 읽기 창은 좌측에 주제 목록, 우측에 해당 주제의 문장을 페이지 형태(`FlowDocumentPageViewer`)로 표시하며, 좌측 목록에서 주제를 클릭하면 우측 내용이 바로 갱신된다. 우측 뷰어는 글꼴/줄간격/여백/테마(종이·다크·세피아)/화면 밝기를 조절할 수 있다(상위 폴더 [text-readers](../text-readers) 참고, 상세는 [doc/common-management.md](doc/common-management.md) §28). 읽기 창 상단에는 `Menu` 최상위 메뉴 하나만 있고, 그 아래 `Files`/`Sentences`/`Words`/`Writing`/`Study` 5개 하위 메뉴가 있다(§29.4). `Sentences`/`Words`/`Writing` 메뉴는 각각 `Setting`(해당 관리 창 열기, 각각 여러 개 동시에 띄울 수 있음)·`Import`(전체 목록에 `.md` 다중 항목 파일 병합)·`Export`(전체 목록을 `.md` 다중 항목 파일 하나로 내보내기)를 제공한다. `Files` 메뉴는 문장 데이터(`topics.json`) 전용 `Load`/`Save`/`Save As`다. (**구현 예정**: 기사·단어·영작을 한 파일로 묶은 "레슨 파일"을 세 저장소에 한 번에 넣는 `Files > Import All` — 사양은 [doc/common-management.md](doc/common-management.md) §30.) 문장 관리 창에서 주제를 더블클릭하면 새 창을 열지 않고 읽기 창의 내용이 해당 주제로 갱신되고, 단어/영작 관리 창을 닫으면 읽기 창의 학습 팝업 데이터가 최신 상태로 다시 병합된다. 단어 관리는 단어/숙어(`Text`) · 품사(`PartOfSpeech`) · 해석(`Ko`) · 표현(`Expression`, 유용한 표현을 자유 텍스트로 적는 용도) 4개 필드를 가진다(§26.7, §26.8). 학습 팝업에서는 단어 표현마다 `품사, 해석` 한 줄 → 구분선 → `표현` 순서로 보여준다(품사/표현이 없으면 그 부분은 생략). **학습** 메뉴에서는 본문 우클릭(단어 등록/문장 등록)으로 쌓이는 `data/today.md`를 직접 편집하는 "오늘의 영어" 창을 열 수 있고, "가져오기"는 이 파일 안의 단어 줄(`단어(품사) (해석) (표현)`)과 문장 표기 패턴을 인식해 단어 데이터로 자동 등록한다(중복은 건너뛰며 여러 번 실행해도 안전하다; 상세는 [doc/common-management.md](doc/common-management.md) §27, §29). 메인 윈도우인 읽기 창을 닫으면 열려 있는 모든 관리 창을 포함해 앱 전체가 종료된다. 구조와 결정 배경은 [doc/common-management.md](doc/common-management.md) §26을 참고한다.
+WPF(.NET) 데스크톱 앱으로 구현되어 있다 (`src/EnglishTraining`, 테스트는 `tests/EnglishTraining.Tests`). 앱 실행 시 읽기 창(학습 리딩 화면)이 메인 윈도우로 열리며, 이 읽기 창은 앱 전체에서 하나만 존재한다. 읽기 창은 좌측에 주제 목록, 우측에 해당 주제의 문장을 페이지 형태(`FlowDocumentPageViewer`)로 표시하며, 좌측 목록에서 주제를 클릭하면 우측 내용이 바로 갱신된다. 우측 뷰어는 글꼴/줄간격/여백/테마(종이·다크·세피아)/화면 밝기를 조절할 수 있다(상위 폴더 [text-readers](../text-readers) 참고, 상세는 [doc/common-management.md](doc/common-management.md) §28). 읽기 창 상단에는 `Menu` 최상위 메뉴 하나만 있고, 그 아래 `Files`/`Sentences`/`Words`/`Writing`/`Study` 5개 하위 메뉴가 있다(§29.4). `Sentences`/`Words`/`Writing` 메뉴는 각각 `Setting`(해당 관리 창 열기, 각각 여러 개 동시에 띄울 수 있음)·`Import`(전체 목록에 `.md` 다중 항목 파일 병합)·`Export`(전체 목록을 `.md` 다중 항목 파일 하나로 내보내기)를 제공한다. `Files` 메뉴는 문장 데이터(`topics.json`) 전용 `Load`/`Save`/`Save As`다. 문장 관리 창에서 주제를 더블클릭하면 새 창을 열지 않고 읽기 창의 내용이 해당 주제로 갱신되고, 단어/영작 관리 창을 닫으면 읽기 창의 학습 팝업 데이터가 최신 상태로 다시 병합된다. 단어 관리는 단어/숙어(`Text`) · 품사(`PartOfSpeech`) · 해석(`Ko`) · 표현(`Expression`, 유용한 표현을 자유 텍스트로 적는 용도) 4개 필드를 가진다(§26.7, §26.8). 학습 팝업에서는 단어 표현마다 `품사, 해석` 한 줄 → 구분선 → `표현` 순서로 보여준다(품사/표현이 없으면 그 부분은 생략). **학습** 메뉴에서는 본문 우클릭(단어 등록/문장 등록)으로 쌓이는 `data/today.md`를 직접 편집하는 "오늘의 영어" 창을 열 수 있고, "가져오기"는 이 파일 안의 단어 줄(`단어(품사) (해석) (표현)`)과 문장 표기 패턴을 인식해 단어 데이터로 자동 등록한다(중복은 건너뛰며 여러 번 실행해도 안전하다; 상세는 [doc/common-management.md](doc/common-management.md) §27, §29). 메인 윈도우인 읽기 창을 닫으면 열려 있는 모든 관리 창을 포함해 앱 전체가 종료된다. 구조와 결정 배경은 [doc/common-management.md](doc/common-management.md) §26을 참고한다.
+
+### 변경 예정 — 읽기 전용 전환 ([doc/common-management.md](doc/common-management.md) §30, §31)
+
+학습 데이터는 이제 형제 프로젝트 [english-data](../english-data)에서 작성·편집한다. 그래서 이 앱에서 데이터를 추가·편집하는 기능은 모두 없애고, 앱은 **데이터 폴더의 레슨 파일을 읽기만 하는 리더**가 된다. 아직 코드는 바뀌지 않았다.
+
+* **데이터 소스**: 설정된 데이터 폴더 바로 아래의 `*.md` 레슨 파일(기사 본문·단어·영작을 기사별로 묶은 형식, §30)을 모두 읽어 메모리에 올린다. `topics.json`/`interpretations.json`/`writings.json`은 더 이상 쓰지 않는다.
+* **메뉴**: `Menu` 아래 `Reload`(F5) / `Study > Today's English` / `Settings…`만 남긴다.
+* **`Settings` 창**: 데이터 폴더 경로를 입력하거나 `Browse…`로 고르고, `Default folder` 버튼으로 이 저장소의 형제 폴더 `english-data\training`을 선택한다. `settings.json`에 저장한다.
+* **제거**: 문장/단어/영작 관리 창, `Files`/`Sentences`/`Words`/`Writing` 메뉴(각 Load·Save·Setting·Import·Export), `Study > Import`.
+* **유지**: 읽기 창·학습 팝업·표시 옵션, 본문 우클릭 `Add Word`/`Add Sentence`와 "오늘의 영어" 창(today.md 메모).
 
 새로운 요구사항이나 변경 사항이 생기면 코드와 함께 이 문서 및 보조 지시서도 갱신한다.
 

@@ -36,6 +36,8 @@
 
 ## 5. 데이터 저장
 
+> **변경 예정 ([공통 관리](common-management.md) §31)**: 학습 데이터(주제·단어·영작)는 앱이 저장하지 않고, 설정된 데이터 폴더의 레슨 파일을 읽기만 한다. 앱이 쓰는 파일은 `settings.json`과 `data/today.md`만 남는다. 아래 JSON 저장소 규칙은 현재 코드 기준이다.
+
 * JSON 직렬화는 `System.Text.Json`, `WriteIndented = true`.
 * 사용자가 앱 내에서 추가/수정/삭제하는 데이터(주제, 해석/영작)는 `%LOCALAPPDATA%\EnglishTraining\*.json`에 저장한다 — 실행 파일 상대 경로(`./data`)를 쓰지 않는다(설치 위치·실행 디렉터리에 영향받지 않도록).
 * 저장소 안 `data/`, `doc/sample-*.md` 등은 기본적으로 가져오기(import)용 예시/원본 텍스트이지 앱이 관리하는 상태 파일이 아니다. 단, "단어/문장 등록"처럼 저장소 안 `data/`에 결과를 남기는 것 자체가 목적인 기능은 예외로 `RepoPaths.FindDataDirectory()`로 리포 루트를 찾아 `data/`에 직접 쓴다(예: `TodayEnglishFile` → `data/today.md`, §27 참고) — 이 경우도 실행 파일 상대 경로가 아니라 `EnglishTraining.sln` 위치 기준으로 찾는다.

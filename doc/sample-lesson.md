@@ -1,6 +1,6 @@
 # 2026-09-27
 
-> **구현 예정** 기능(`Files > Import All`)의 샘플이다 — [common-management.md](common-management.md) §30.
+> 레슨 파일(§30) 샘플이다. 실제 데이터는 [english-data](../../english-data)의 `training/` 폴더에 있고, 앱은 그 폴더를 읽는다(§31, **구현 예정**) — [common-management.md](common-management.md) §30~§31.
 
 ## Working from Home
 
