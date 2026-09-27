@@ -2,7 +2,9 @@ namespace EnglishTraining.Models;
 
 public sealed class AppSettings
 {
-    public Guid? LastSelectedTopicId { get; set; }
+    public string? LastSelectedTopicFile { get; set; }
+    public string? LastSelectedTopicTitle { get; set; }
+    public string? DataFolder { get; set; }
     public double? WindowWidth { get; set; }
     public double? WindowHeight { get; set; }
     public double? WindowLeft { get; set; }

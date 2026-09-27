@@ -46,18 +46,35 @@ public static partial class TodayEnglishParser
                 continue;
             }
 
-            var wordMatch = WordLine().Match(line);
-            if (wordMatch.Success)
+            if (TryParseWordLine(line, out var entry))
             {
-                interpretations.Add(new InterpretationEntry
-                {
-                    Text = wordMatch.Groups["word"].Value.Trim(),
-                    PartOfSpeech = wordMatch.Groups["pos"].Value.Trim(),
-                    Ko = wordMatch.Groups["ko"].Value.Trim(),
-                    Expression = wordMatch.Groups["expression"].Value.Trim(),
-                });
+                interpretations.Add(entry);
             }
         }
+    }
+
+    /// <summary>
+    /// Recognizes a word line "단어(품사) (해석) (표현)" (three parenthesized
+    /// groups). Shared with LessonMarkdownParser (§30), which reuses this exact
+    /// word-line shape for a lesson file's "### Words" section.
+    /// </summary>
+    internal static bool TryParseWordLine(string line, out InterpretationEntry entry)
+    {
+        var wordMatch = WordLine().Match(line);
+        if (!wordMatch.Success)
+        {
+            entry = null!;
+            return false;
+        }
+
+        entry = new InterpretationEntry
+        {
+            Text = wordMatch.Groups["word"].Value.Trim(),
+            PartOfSpeech = wordMatch.Groups["pos"].Value.Trim(),
+            Ko = wordMatch.Groups["ko"].Value.Trim(),
+            Expression = wordMatch.Groups["expression"].Value.Trim(),
+        };
+        return true;
     }
 
     private static int? NextNonBlankLineIndex(string[] lines, int start)

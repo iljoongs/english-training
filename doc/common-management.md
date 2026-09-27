@@ -660,7 +660,7 @@ went to
 
 ### 26.2 학습 데이터 출처
 
-> **변경 예정 (§31)**: 학습 데이터는 JSON 파일 대신 데이터 폴더의 레슨 파일(§30)에서 읽기 전용으로 읽고, 관리 창은 없어진다. 아래는 현재 코드 기준의 기록이다.
+> **변경됨 (§31)**: 학습 데이터는 JSON 파일이 아니라 데이터 폴더의 레슨 파일(§30)에서 읽기 전용으로 읽으며, 관리 창은 모두 제거됐다. 아래는 §31 이전(과거) 코드 기준의 기록이다.
 
 **로컬 JSON 파일**을 데이터 소스로 사용한다. 외부 API/DB 연동은 하지 않는다. (실시간 번역 기능을 외부 API 연동으로 추가하려는 계획이 있었으나 보류됐다 — §26.5 참고.)
 
@@ -755,7 +755,7 @@ went to
 
 ### 26.11 읽기 창 메뉴 재구성 (`Menu` 아래 `Files`/`Sentences`/`Words`/`Writing`/`Study`)
 
-> **변경 예정 (§31)**: 이 메뉴 구성은 §31.3(`Reload` / `Study > Today's English` / `Settings…`)으로 대체된다. 아래는 현재 코드 기준의 기록이다.
+> **대체됨 (§31)**: 이 메뉴 구성은 §31.3(`Reload` / `Study > Today's English` / `Settings…`)으로 대체됐다. 아래는 §31 이전(과거) 코드 기준의 기록이다.
 
 §26.10에서 영어화했던 `Manage`(Sentences/Words/Writing) + `Study`(Today's English/Import) 2단 메뉴 구조를 없애고, 최상위 메뉴 하나(`Menu`) 아래 **`Files` / `Sentences` / `Words` / `Writing` / `Study` 5개의 하위 메뉴**를 두는 3단 구조로 바꿨다. 관리 창을 여는 동작(`Setting`)은 그대로 남기고, 관리 창을 열지 않고도 읽기 창에서 바로 md 파일을 넣고 뺄 수 있는 `Import`/`Export`를 각 카테고리 메뉴에 추가했다.
 
@@ -853,7 +853,7 @@ wondering if
 
 ## 29. "학습 > 가져오기" (data/today.md → 단어 관리)
 
-> **변경 예정 (§31)**: `Study > Import`와 이 절의 가져오기 기능은 제거된다. today.md 단어 줄 형식(§29.1)은 레슨 파일의 `### Words` 형식(§30)으로 계속 쓰인다.
+> **제거됨 (§31)**: `Study > Import`와 이 절의 가져오기 기능은 제거됐다. today.md 단어 줄 형식(§29.1)은 레슨 파일의 `### Words` 형식(§30)에서 계속 쓰인다(`TodayEnglishParser.TryParseWordLine`을 `LessonMarkdownParser`가 재사용).
 
 읽기 창 메뉴의 `학습 > 가져오기`는 `data/today.md`(§27)를 읽어 단어 관리(§26.7) 데이터를 자동으로 등록하는 기능이다.
 
@@ -885,11 +885,9 @@ wondering if
 
 ---
 
-## 30. 레슨 파일 형식 — **구현 예정**
+## 30. 레슨 파일 형식
 
-> **상태: 미구현.** 확정된 사양이며 코드는 아직 없다. 처음에는 `Files > Import All` 메뉴로 세 저장소에 넣는 형식으로 정했으나, §31(읽기 전용 전환)에 따라 **데이터 폴더의 레슨 파일을 앱이 직접 읽는 형식**으로 바뀌었다. `Import All` 메뉴는 만들지 않는다.
-
-레슨 파일은 **기사 하나 아래에 그 기사의 본문·단어·영작을 함께 묶은** `.md` 파일이다. 데이터는 형제 프로젝트 [english-data](../../english-data)의 `training/` 폴더에서 작성·관리하며(주제당 파일 하나), 이 앱은 그 폴더를 읽기만 한다(§31).
+레슨 파일은 **기사 하나 아래에 그 기사의 본문·단어·영작을 함께 묶은** `.md` 파일이다. 데이터는 형제 프로젝트 [english-data](../../english-data)의 `training/` 폴더에서 작성·관리하며(주제당 파일 하나), 이 앱은 그 폴더를 읽기만 한다(§31). `Files > Import All` 같은 메뉴는 없다 — 앱은 데이터 폴더를 직접 읽는다.
 
 샘플 파일: [doc/sample-lesson.md](sample-lesson.md).
 
@@ -927,9 +925,7 @@ commute | I commute by bus.
 
 ---
 
-## 31. 읽기 전용 전환 — 데이터 폴더에서 직접 읽기 + `Settings` 창 — **구현 예정**
-
-> **상태: 미구현.** 확정된 사양이며 코드는 아직 없다. 구현 시 이 절을 기준으로 하고, 완료되면 상태 표시를 지우고 §31.6의 문서 정리를 함께 한다.
+## 31. 읽기 전용 전환 — 데이터 폴더에서 직접 읽기 + `Settings` 창
 
 ### 31.1 배경
 
@@ -983,26 +979,59 @@ Menu (☰)
 * **최초 실행**: `DataFolder`가 비어 있을 때 기본 데이터 폴더가 존재하면 그 값을 자동으로 쓰고 저장한다. 기본 폴더도 없으면 §31.2의 안내 문구를 표시한다.
 * 저장 위치는 기존과 같은 `%LOCALAPPDATA%\EnglishTraining\settings.json`(`AppSettings`에 `string? DataFolder` 추가).
 
-### 31.5 제거 대상 (구현 시)
+### 31.5 제거된 것 (구현 완료)
 
 | 구분 | 제거 |
 |---|---|
-| 창 | 문장 관리(`SentenceManagementWindow`), 단어 관리(`InterpretationManagementWindow`), 영작 관리(`WritingManagementWindow`) |
-| ViewModel | 관리 창용 ViewModel(`SentenceManagementViewModel`, `EntryManagementViewModel<T>` 등) |
-| 저장소 | `ITopicRepository`/`JsonTopicRepository`, `IEntryRepository<T>`/`JsonEntryRepository<T>`, `DefaultLearningData`. 병합 저장소(`IExpressionRepository`/`JsonExpressionRepository`)는 JSON 대신 폴더에서 읽은 데이터를 받도록 바꾸거나 대체한다 |
-| 파서 | `TopicMarkdownParser`, `InterpretationMarkdownParser`, `WritingMarkdownParser`, `LabeledTextParser` 및 각 `Export`/`FormatMultiple`. 단, `MarkdownSectionSplitter.CleanBody`와 `TodayEnglishParser`의 단어 줄 정규식은 §30 파서가 재사용하므로 남기거나 옮긴다 |
+| 창 | 문장 관리(`SentenceManagementWindow`), 단어 관리(`InterpretationManagementWindow`), 영작 관리(`WritingManagementWindow`), 그리고 이 세 창만 쓰던 `NewTopicDialog` |
+| ViewModel | 관리 창용 ViewModel(`SentenceManagementViewModel`, `EntryManagementViewModel<T>`) |
+| 저장소 | `ITopicRepository`/`JsonTopicRepository`, `IEntryRepository<T>`/`JsonEntryRepository<T>`, `DefaultLearningData`. 병합 저장소(`IExpressionRepository`/`JsonExpressionRepository`)는 그대로 남아 폴더에서 읽은 단어/영작 목록을 받는다(생성자·`LoadFromEntries`는 동일, 중복 처리만 "먼저 읽힌 것 우선"으로 수정) |
+| 파서 | `TopicMarkdownParser`, `InterpretationMarkdownParser`, `WritingMarkdownParser`, `LabeledTextParser` 및 각 `Export`/`FormatMultiple`. `MarkdownSectionSplitter.CleanBody`(및 `Split`)와 `TodayEnglishParser`의 단어 줄 인식(`TryParseWordLine`로 공개 전환)은 §30의 `LessonMarkdownParser`가 그대로 재사용한다 |
 | 가져오기 | `TodayEnglishImportService`, `TodayEnglishImportResult`(§29) |
 | 테스트/샘플 | 위 코드의 테스트, 그리고 그 테스트만 쓰던 `doc/sample-topic.md`, `doc/sample-interpretation.md`, `doc/sample-writing.md`, `doc/sample-word-multi.md`, `doc/sample-writings-multi.md` |
 
-유지: 읽기 창과 학습 팝업 전체(§1~§25, §26.3~§26.4, §26.8의 팝업 레이아웃, §28), `TodayEnglishFile`/`TodayEnglishWindow`(§27), `TextNormalizer`/`TextSegmenter`/`PopupContentAssembler`, `AppSettingsStore`.
+유지: 읽기 창과 학습 팝업 전체(§1~§25, §26.3~§26.4, §26.8의 팝업 레이아웃, §28), `TodayEnglishFile`/`TodayEnglishWindow`(§27), `TextNormalizer`/`TextSegmenter`/`PopupContentAssembler`, `AppSettingsStore`, `TopicViewModel`(읽기 창이 직접 씀).
 
-### 31.6 문서 정리 (구현 완료 시)
+### 31.6 문서 정리 (완료)
 
-* [sentence-management.md](sentence-management.md), [expression-management.md](expression-management.md)는 삭제한다. 읽기 창 화면 구성·마지막 주제 복원·창 위치 저장(sentence-management §2)과 본문 표시 요구사항(§9)은 이 문서로 옮긴다.
-* §26.2, §26.7, §26.9, §26.11, §29의 "현재 구현" 서술을 과거 기록으로 정리하고, [CLAUDE.md](../CLAUDE.md) §3 구현 현황과 [coding-convention.md](coding-convention.md) §4~§6을 갱신한다.
-* §30·§31의 "구현 예정" 표시를 지운다.
+* [sentence-management.md](sentence-management.md), [expression-management.md](expression-management.md)는 삭제했다. 읽기 창 화면 구성·마지막 주제 복원·창 위치 저장, 본문 표시 요구사항은 아래 §31.8·§31.9로 옮겼다.
+* §26.2, §26.7, §26.9, §26.11, §29는 "현재 구현"이 아니라 과거 기록이다 — 지금의 데이터 흐름/메뉴 구성은 이 절(§30·§31)을 따른다. [CLAUDE.md](../CLAUDE.md) §2~§3과 [coding-convention.md](coding-convention.md)도 함께 갱신했다.
 
-### 31.7 구현 위치 (예정)
+### 31.7 구현 위치
 
-* `Services/LessonMarkdownParser.cs`(§30), `Services/LessonFolderLoader.cs`(폴더 → 주제·단어·영작 + 건너뛴 파일 수), `Services/DataFolderPaths.cs`(기본 데이터 폴더 찾기), `Views/SettingsWindow.xaml(.cs)`, `Models/AppSettings.cs`(`DataFolder`, `LastSelectedTopicFile`, `LastSelectedTopicTitle`)
+* `Services/LessonMarkdownParser.cs`(§30), `Services/LessonFolderLoader.cs`(폴더 → 주제·단어·영작 + 건너뛴 파일 수), `Services/DataFolderPaths.cs`(기본 데이터 폴더 찾기), `Views/SettingsWindow.xaml(.cs)`, `Models/AppSettings.cs`(`DataFolder`, `LastSelectedTopicFile`, `LastSelectedTopicTitle`), `Models/Topic.cs`(`SourceFileName` 추가)
 * 테스트: `LessonMarkdownParserTests`, `LessonFolderLoaderTests`(파일명 순서, 중복 단어는 먼저 읽힌 것 우선, 하위 폴더 무시, 읽기 실패 파일 스킵, 빈 폴더/없는 폴더), `DataFolderPathsTests`(sln 기준 형제 폴더 계산)
+
+### 31.8 읽기 창 화면 구성
+
+```text
+┌──────────────────────────────────────────────┐
+│ ☰  ☑단어 ☐영작  글꼴 줄간격 여백 테마 …       │
+├───────────────┬──────────────────────────────┤
+│ Buckingham     │ More and more companies are   │
+│ Palace         │ allowing their employees to   │
+│ Working from   │ work from home ...            │
+│ Home           │                                │
+│ ...            │                                │
+├───────────────┴──────────────────────────────┤
+│ E:\...\training · 6 files · 6 topics · 34     │
+│ words · 20 writing                            │
+└──────────────────────────────────────────────┘
+```
+
+* 왼쪽: 데이터 폴더에서 읽은 전체 주제 목록(읽기 전용 탐색용, 단일 선택). 파일명 순 → 파일 안 `##` 순서대로 나열된다(§31.2). 클릭하면 그 주제의 본문이 오른쪽에 즉시 표시된다.
+* 오른쪽: 현재 선택된 주제의 본문 텍스트 — 마우스 오버 학습 팝업이 동작하는 영역(§2~§25).
+* 주제를 클릭할 때마다 그 주제의 파일명(`LastSelectedTopicFile`)과 제목(`LastSelectedTopicTitle`)이 **마지막 선택 주제**로 `%LOCALAPPDATA%\EnglishTraining\settings.json`에 즉시 저장된다. 앱을 껐다 다시 켜면(또는 `Reload`/`Settings` 저장으로 다시 읽으면) 이 마지막 주제가 자동으로 선택된 채로 열린다(해당 파일명+제목 조합을 찾지 못하면 첫 번째 주제로 대체). 주제 `Id`는 폴더를 다시 읽을 때마다 새로 생성되므로 `Guid`가 아니라 파일명+제목으로 식별한다.
+* 주제 목록이 선택 항목을 갱신할 때마다(재실행 직후 포함) 좌측 목록은 선택된 항목이 보이도록 **자동으로 스크롤**된다.
+* 읽기 창의 **위치와 크기**도 같은 `settings.json`에 저장된다 — 창을 닫을 때(정상 종료 시) 그 시점의 화면 좌표(왼쪽/위)와 너비/높이를 저장하고, 다음 실행 때 그대로 복원한다.
+* 맨 아래 상태 표시줄에는 `{데이터 폴더 경로} · {파일 수} files · {주제 수} topics · {단어 수} words · {영작 수} writing`을 표시하고, 읽기 실패한 파일이 있으면 뒤에 `· N file(s) skipped`가 붙는다(§31.2). 데이터 폴더가 없거나 `.md`가 하나도 없으면 본문 영역에 `Data folder not found. Set it in Menu > Settings.` 안내 문구가 대신 표시된다.
+
+### 31.9 예문(본문 텍스트) 표시 요구사항
+
+읽기 창에 표시되는 텍스트 자체에 대한 요구사항은 다음과 같다(레슨 파일의 `### Text` 섹션이 그대로 사용됨, §30.1).
+
+* 여러 문장을 연속해서 표시할 수 있어야 한다.
+* 문단 단위의 텍스트도 표시할 수 있어야 한다.
+* 텍스트의 가독성을 고려하여 적절한 줄 간격과 문장 간격을 제공한다.
+
+예문에 등장하는 단어/표현 중 학습 팝업을 띄우고 싶은 대상은 §12의 `LearningExpression` 데이터(레슨 파일의 `### Words`/`### Writing`에서 만들어짐, §30.1)에 먼저 등록되어 있어야 한다. 등록되지 않은 단어는 팝업 없이 그냥 텍스트로만 보인다(§15). 대소문자·구두점은 매칭 시 정규화되므로(§26.4) 예문 안에서는 자연스러운 문장 그대로 작성하면 되지만, 어형 변화(`looked forward to` 등)는 자동으로 인식되지 않으므로 활용형을 쓸 경우 그 활용형 자체를 학습 데이터에 별도로 등록해야 한다.

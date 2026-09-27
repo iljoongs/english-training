@@ -1,6 +1,6 @@
 namespace EnglishTraining.Models;
 
-public sealed class WritingEntry : IEntry
+public sealed class WritingEntry
 {
     public Guid Id { get; init; } = Guid.NewGuid();
     public string Text { get; set; } = string.Empty;

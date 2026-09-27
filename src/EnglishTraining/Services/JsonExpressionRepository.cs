@@ -29,14 +29,14 @@ public sealed class JsonExpressionRepository : IExpressionRepository
             .GroupBy(e => TextNormalizer.Normalize(e.Text))
             .ToDictionary(g => g.Key, g => new InterpretationInfo
             {
-                PartOfSpeech = g.Last().PartOfSpeech,
-                Ko = g.Last().Ko,
-                Expression = g.Last().Expression,
+                PartOfSpeech = g.First().PartOfSpeech,
+                Ko = g.First().Ko,
+                Expression = g.First().Expression,
             });
 
         var writingsByKey = writings
             .GroupBy(e => TextNormalizer.Normalize(e.Text))
-            .ToDictionary(g => g.Key, g => new WritingInfo { Description = g.Last().Description, Example = g.Last().Example });
+            .ToDictionary(g => g.Key, g => new WritingInfo { Description = g.First().Description, Example = g.First().Example });
 
         var textByKey = new Dictionary<string, string>();
         foreach (var entry in interpretations)

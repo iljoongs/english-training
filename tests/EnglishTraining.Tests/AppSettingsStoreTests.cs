@@ -12,7 +12,8 @@ public class AppSettingsStoreTests
         {
             var store = new AppSettingsStore(path);
 
-            Assert.Null(store.LastSelectedTopicId);
+            Assert.Null(store.LastSelectedTopicFile);
+            Assert.Null(store.LastSelectedTopicTitle);
             Assert.False(File.Exists(path));
         }
         finally
@@ -27,13 +28,13 @@ public class AppSettingsStoreTests
         var path = Path.Combine(Path.GetTempPath(), $"settings-{Guid.NewGuid()}.json");
         try
         {
-            var topicId = Guid.NewGuid();
             var store = new AppSettingsStore(path);
-            store.SetLastSelectedTopic(topicId);
+            store.SetLastSelectedTopic("lesson1.md", "Working from Home");
 
             var reloaded = new AppSettingsStore(path);
 
-            Assert.Equal(topicId, reloaded.LastSelectedTopicId);
+            Assert.Equal("lesson1.md", reloaded.LastSelectedTopicFile);
+            Assert.Equal("Working from Home", reloaded.LastSelectedTopicTitle);
         }
         finally
         {
@@ -48,12 +49,32 @@ public class AppSettingsStoreTests
         try
         {
             var store = new AppSettingsStore(path);
-            store.SetLastSelectedTopic(Guid.NewGuid());
-            store.SetLastSelectedTopic(null);
+            store.SetLastSelectedTopic("lesson1.md", "Working from Home");
+            store.SetLastSelectedTopic(null, null);
 
             var reloaded = new AppSettingsStore(path);
 
-            Assert.Null(reloaded.LastSelectedTopicId);
+            Assert.Null(reloaded.LastSelectedTopicFile);
+            Assert.Null(reloaded.LastSelectedTopicTitle);
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
+    [Fact]
+    public void SetDataFolder_PersistsAcrossInstances()
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"settings-{Guid.NewGuid()}.json");
+        try
+        {
+            var store = new AppSettingsStore(path);
+            store.SetDataFolder(@"E:\code\english-data\training");
+
+            var reloaded = new AppSettingsStore(path);
+
+            Assert.Equal(@"E:\code\english-data\training", reloaded.DataFolder);
         }
         finally
         {
@@ -108,14 +129,13 @@ public class AppSettingsStoreTests
         var path = Path.Combine(Path.GetTempPath(), $"settings-{Guid.NewGuid()}.json");
         try
         {
-            var topicId = Guid.NewGuid();
             var store = new AppSettingsStore(path);
-            store.SetLastSelectedTopic(topicId);
+            store.SetLastSelectedTopic("lesson1.md", "Working from Home");
             store.SetWindowBounds(50, 60, 1024, 768);
 
             var reloaded = new AppSettingsStore(path);
 
-            Assert.Equal(topicId, reloaded.LastSelectedTopicId);
+            Assert.Equal("lesson1.md", reloaded.LastSelectedTopicFile);
             Assert.Equal(1024, reloaded.WindowWidth);
         }
         finally

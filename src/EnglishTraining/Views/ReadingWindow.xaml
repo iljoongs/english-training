@@ -2,35 +2,17 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="English Training" Height="520" Width="840"
-        Icon="pack://application:,,,/Assets/english-training.png">
+        Icon="pack://application:,,,/Assets/english-training.png"
+        KeyDown="OnWindowKeyDown">
     <DockPanel>
         <ToolBar DockPanel.Dock="Top">
             <Menu Background="Transparent" VerticalAlignment="Center">
                 <MenuItem Header="&#9776;" FontSize="14" Padding="6,0">
-                    <MenuItem Header="Files">
-                        <MenuItem Header="Load" Click="OnFilesLoadClick" />
-                        <MenuItem Header="Save" Click="OnFilesSaveClick" />
-                        <MenuItem Header="Save As" Click="OnFilesSaveAsClick" />
-                    </MenuItem>
-                    <MenuItem Header="Sentences">
-                        <MenuItem Header="Setting" Click="OnManageTopicsClick" />
-                        <MenuItem Header="Import" Click="OnSentencesImportClick" />
-                        <MenuItem Header="Export" Click="OnSentencesExportClick" />
-                    </MenuItem>
-                    <MenuItem Header="Words">
-                        <MenuItem Header="Setting" Click="OnManageInterpretationsClick" />
-                        <MenuItem Header="Import" Click="OnWordsImportClick" />
-                        <MenuItem Header="Export" Click="OnWordsExportClick" />
-                    </MenuItem>
-                    <MenuItem Header="Writing">
-                        <MenuItem Header="Setting" Click="OnManageWritingsClick" />
-                        <MenuItem Header="Import" Click="OnWritingImportClick" />
-                        <MenuItem Header="Export" Click="OnWritingExportClick" />
-                    </MenuItem>
+                    <MenuItem Header="Reload" InputGestureText="F5" Click="OnReloadClick" />
                     <MenuItem Header="Study">
                         <MenuItem Header="Today's English" Click="OnTodayEnglishClick" />
-                        <MenuItem Header="Import" Click="OnImportTodayEnglishClick" />
                     </MenuItem>
+                    <MenuItem Header="Settings…" Click="OnSettingsClick" />
                 </MenuItem>
             </Menu>
 
@@ -59,6 +41,10 @@
             <Slider Width="80" Minimum="0" Maximum="0.7" Value="{Binding DimmingOpacity}" VerticalAlignment="Center" />
         </ToolBar>
 
+        <Border DockPanel.Dock="Bottom" BorderThickness="0,1,0,0" BorderBrush="#DDDDDD" Padding="6,3">
+            <TextBlock x:Name="StatusTextBlock" FontSize="11" Foreground="#666666" />
+        </Border>
+
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="200" />
@@ -86,6 +72,12 @@
                     </FlowDocumentPageViewer.ContextMenu>
                     <FlowDocument x:Name="Document" />
                 </FlowDocumentPageViewer>
+
+                <TextBlock x:Name="GuidanceTextBlock"
+                           Text="Data folder not found. Set it in Menu &gt; Settings."
+                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                           FontSize="14" Foreground="#888888"
+                           Visibility="Collapsed" />
 
                 <Rectangle Fill="Black" IsHitTestVisible="False" Opacity="{Binding DimmingOpacity}" />
             </Grid>

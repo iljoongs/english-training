@@ -29,7 +29,11 @@ public sealed class AppSettingsStore
         return new AppSettingsStore(AppDataPaths.Resolve("settings.json"));
     }
 
-    public Guid? LastSelectedTopicId => _settings.LastSelectedTopicId;
+    public string? LastSelectedTopicFile => _settings.LastSelectedTopicFile;
+
+    public string? LastSelectedTopicTitle => _settings.LastSelectedTopicTitle;
+
+    public string? DataFolder => _settings.DataFolder;
 
     public double? WindowWidth => _settings.WindowWidth;
 
@@ -51,9 +55,16 @@ public sealed class AppSettingsStore
 
     public double? DimmingOpacity => _settings.DimmingOpacity;
 
-    public void SetLastSelectedTopic(Guid? topicId)
+    public void SetLastSelectedTopic(string? fileName, string? title)
     {
-        _settings.LastSelectedTopicId = topicId;
+        _settings.LastSelectedTopicFile = fileName;
+        _settings.LastSelectedTopicTitle = title;
+        Save();
+    }
+
+    public void SetDataFolder(string dataFolder)
+    {
+        _settings.DataFolder = dataFolder;
         Save();
     }
 

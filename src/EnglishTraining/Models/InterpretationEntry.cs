@@ -1,6 +1,6 @@
 namespace EnglishTraining.Models;
 
-public sealed class InterpretationEntry : IEntry
+public sealed class InterpretationEntry
 {
     public Guid Id { get; init; } = Guid.NewGuid();
     public string Text { get; set; } = string.Empty;

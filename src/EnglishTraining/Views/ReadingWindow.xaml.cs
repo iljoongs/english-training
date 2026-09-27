@@ -1,25 +1,23 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Documents;
+using System.Windows.Input;
 using System.Windows.Media;
 using EnglishTraining.Controls;
 using EnglishTraining.Models;
 using EnglishTraining.Services;
 using EnglishTraining.ViewModels;
-using Microsoft.Win32;
 
 namespace EnglishTraining.Views;
 
 public partial class ReadingWindow : Window
 {
     private readonly MainViewModel _viewModel;
-    private readonly ITopicRepository _topicRepository;
-    private readonly IEntryRepository<InterpretationEntry> _interpretationRepository;
-    private readonly IEntryRepository<WritingEntry> _writingRepository;
     private readonly AppSettingsStore _settingsStore;
     private readonly ObservableCollection<TopicViewModel> _topics = [];
     private readonly Popup _popup;
@@ -27,28 +25,16 @@ public partial class ReadingWindow : Window
     private ExpressionSpan? _activeSpan;
     private Guid? _currentTopicId;
 
-    public ReadingWindow(
-        Topic? initialTopic,
-        IExpressionRepository expressionRepository,
-        ITopicRepository topicRepository,
-        IEntryRepository<InterpretationEntry> interpretationRepository,
-        IEntryRepository<WritingEntry> writingRepository,
-        AppSettingsStore settingsStore)
+    public ReadingWindow(AppSettingsStore settingsStore)
     {
         InitializeComponent();
 
-        Title = initialTopic?.Title ?? "English Training";
-        _topicRepository = topicRepository;
-        _interpretationRepository = interpretationRepository;
-        _writingRepository = writingRepository;
         _settingsStore = settingsStore;
-        _currentTopicId = initialTopic?.Id;
-        _viewModel = new MainViewModel(initialTopic?.Text ?? string.Empty, expressionRepository);
+        _viewModel = new MainViewModel(string.Empty, new JsonExpressionRepository([]));
         DataContext = _viewModel;
         ApplySavedDisplaySettings();
 
         TopicsListBox.ItemsSource = _topics;
-        RefreshTopics();
 
         Closing += (_, _) => _settingsStore.SetWindowBounds(Left, Top, Width, Height);
 
@@ -70,20 +56,97 @@ public partial class ReadingWindow : Window
             IsOpen = false,
         };
 
-        BuildDocument();
+        ReloadData();
     }
 
-    public void LoadTopic(Topic topic)
+    /// <summary>
+    /// Reads the configured (or default) data folder and rebuilds the topic
+    /// list / learning popup data from it (§31.2). Called on startup, after
+    /// Settings is saved, and from Menu &gt; Reload (F5).
+    /// </summary>
+    private void ReloadData()
+    {
+        _popup.IsOpen = false;
+        _activeSpan = null;
+
+        var folder = ResolveDataFolder();
+        var result = folder is not null
+            ? LessonFolderLoader.LoadFolder(folder)
+            : new LessonFolderResult { Topics = [], Words = [], Writings = [], FileCount = 0, SkippedFileCount = 0 };
+
+        _topics.Clear();
+        foreach (var topic in result.Topics)
+        {
+            _topics.Add(new TopicViewModel(topic));
+        }
+
+        var expressionRepository = JsonExpressionRepository.LoadFromEntries(result.Words, result.Writings);
+        _viewModel.ReloadWithSameText(expressionRepository);
+
+        var selected = _topics.FirstOrDefault(t =>
+                t.Topic.SourceFileName == _settingsStore.LastSelectedTopicFile
+                && t.Title == _settingsStore.LastSelectedTopicTitle)
+            ?? _topics.FirstOrDefault();
+
+        if (selected is not null)
+        {
+            Title = selected.Title;
+            _currentTopicId = selected.Id;
+            _viewModel.LoadText(selected.Text);
+        }
+        else
+        {
+            Title = "English Training";
+            _currentTopicId = null;
+            _viewModel.LoadText(string.Empty);
+        }
+
+        TopicsListBox.SelectedItem = selected;
+        if (selected is not null)
+        {
+            TopicsListBox.ScrollIntoView(selected);
+        }
+
+        BuildDocument();
+        UpdateStatusBar(folder, result);
+        GuidanceTextBlock.Visibility = result.FileCount == 0 ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private string? ResolveDataFolder()
+    {
+        if (_settingsStore.DataFolder is { Length: > 0 } configured)
+        {
+            return configured;
+        }
+
+        if (DataFolderPaths.TryGetDefaultDataFolder(out var defaultFolder) && Directory.Exists(defaultFolder))
+        {
+            _settingsStore.SetDataFolder(defaultFolder);
+            return defaultFolder;
+        }
+
+        return null;
+    }
+
+    private void UpdateStatusBar(string? folder, LessonFolderResult result)
+    {
+        StatusTextBlock.Text = folder is null
+            ? "No data folder set."
+            : $"{folder} · {result.FileCount} files · {result.Topics.Count} topics · " +
+              $"{result.Words.Count} words · {result.Writings.Count} writing" +
+              (result.SkippedFileCount > 0 ? $" · {result.SkippedFileCount} file(s) skipped" : string.Empty);
+    }
+
+    private void LoadTopic(Topic topic)
     {
         _popup.IsOpen = false;
         _activeSpan = null;
 
         Title = topic.Title;
         _currentTopicId = topic.Id;
-        _settingsStore.SetLastSelectedTopic(topic.Id);
+        _settingsStore.SetLastSelectedTopic(topic.SourceFileName, topic.Title);
         _viewModel.LoadText(topic.Text);
         BuildDocument();
-        RefreshTopics();
 
         if (WindowState == WindowState.Minimized)
         {
@@ -93,28 +156,34 @@ public partial class ReadingWindow : Window
         Activate();
     }
 
-    public void RefreshTopics()
-    {
-        _topics.Clear();
-        foreach (var topic in _topicRepository.Topics)
-        {
-            _topics.Add(new TopicViewModel(topic));
-        }
-
-        var selected = _topics.FirstOrDefault(t => t.Id == _currentTopicId);
-        TopicsListBox.SelectedItem = selected;
-
-        if (selected is not null)
-        {
-            TopicsListBox.ScrollIntoView(selected);
-        }
-    }
-
     private void OnTopicSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (TopicsListBox.SelectedItem is TopicViewModel selected && selected.Id != _currentTopicId)
         {
             LoadTopic(selected.Topic);
+        }
+    }
+
+    private void OnWindowKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.F5)
+        {
+            ReloadData();
+        }
+    }
+
+    private void OnReloadClick(object sender, RoutedEventArgs e)
+    {
+        ReloadData();
+    }
+
+    private void OnSettingsClick(object sender, RoutedEventArgs e)
+    {
+        var settingsWindow = new SettingsWindow(_settingsStore.DataFolder) { Owner = this };
+        if (settingsWindow.ShowDialog() == true && settingsWindow.SelectedFolder is { } folder)
+        {
+            _settingsStore.SetDataFolder(folder);
+            ReloadData();
         }
     }
 
@@ -314,151 +383,6 @@ public partial class ReadingWindow : Window
         return new[] { new CustomPopupPlacement(new Point(x, y), PopupPrimaryAxis.None) };
     }
 
-    public void RefreshExpressionData()
-    {
-        var merged = JsonExpressionRepository.LoadFromEntries(
-            _interpretationRepository.Entries,
-            _writingRepository.Entries);
-
-        _viewModel.ReloadWithSameText(merged);
-        BuildDocument();
-    }
-
-    private void OnManageTopicsClick(object sender, RoutedEventArgs e)
-    {
-        var managementWindow = new SentenceManagementWindow(_topicRepository, this);
-        managementWindow.Closed += (_, _) => RefreshTopics();
-        managementWindow.Show();
-    }
-
-    private void OnManageInterpretationsClick(object sender, RoutedEventArgs e)
-    {
-        var managementWindow = new InterpretationManagementWindow(_interpretationRepository);
-        managementWindow.Closed += (_, _) => RefreshExpressionData();
-        managementWindow.Show();
-    }
-
-    private void OnManageWritingsClick(object sender, RoutedEventArgs e)
-    {
-        var managementWindow = new WritingManagementWindow(_writingRepository);
-        managementWindow.Closed += (_, _) => RefreshExpressionData();
-        managementWindow.Show();
-    }
-
-    private void OnFilesLoadClick(object sender, RoutedEventArgs e)
-    {
-        var dialog = new OpenFileDialog { Filter = "Sentence data (*.json)|*.json", CheckFileExists = true };
-        if (dialog.ShowDialog(this) != true)
-        {
-            return;
-        }
-
-        _topicRepository.Open(dialog.FileName);
-
-        var firstTopic = _topicRepository.Topics.FirstOrDefault();
-        if (firstTopic is not null)
-        {
-            LoadTopic(firstTopic);
-        }
-        else
-        {
-            _currentTopicId = null;
-            RefreshTopics();
-        }
-    }
-
-    private void OnFilesSaveClick(object sender, RoutedEventArgs e)
-    {
-        _topicRepository.Save();
-    }
-
-    private void OnFilesSaveAsClick(object sender, RoutedEventArgs e)
-    {
-        var dialog = new SaveFileDialog { Filter = "Sentence data (*.json)|*.json", FileName = "topics.json" };
-        if (dialog.ShowDialog(this) == true)
-        {
-            _topicRepository.SaveAs(dialog.FileName);
-        }
-    }
-
-    private void OnSentencesImportClick(object sender, RoutedEventArgs e)
-    {
-        var dialog = new OpenFileDialog { Filter = "Markdown files (*.md)|*.md", CheckFileExists = true };
-        if (dialog.ShowDialog(this) != true)
-        {
-            return;
-        }
-
-        foreach (var topic in TopicMarkdownParser.ParseMultiple(dialog.FileName))
-        {
-            _topicRepository.Add(topic);
-        }
-
-        _topicRepository.Save();
-        RefreshTopics();
-    }
-
-    private void OnSentencesExportClick(object sender, RoutedEventArgs e)
-    {
-        var dialog = new SaveFileDialog { Filter = "Markdown files (*.md)|*.md", FileName = "sentences-export.md" };
-        if (dialog.ShowDialog(this) == true)
-        {
-            TopicMarkdownParser.ExportMultiple(_topicRepository.Topics, dialog.FileName);
-        }
-    }
-
-    private void OnWordsImportClick(object sender, RoutedEventArgs e)
-    {
-        var dialog = new OpenFileDialog { Filter = "Markdown files (*.md)|*.md", CheckFileExists = true };
-        if (dialog.ShowDialog(this) != true)
-        {
-            return;
-        }
-
-        foreach (var entry in InterpretationMarkdownParser.ParseAny(dialog.FileName))
-        {
-            _interpretationRepository.Add(entry);
-        }
-
-        _interpretationRepository.Save();
-        RefreshExpressionData();
-    }
-
-    private void OnWordsExportClick(object sender, RoutedEventArgs e)
-    {
-        var dialog = new SaveFileDialog { Filter = "Markdown files (*.md)|*.md", FileName = "words-export.md" };
-        if (dialog.ShowDialog(this) == true)
-        {
-            InterpretationMarkdownParser.ExportMultiple(_interpretationRepository.Entries, dialog.FileName);
-        }
-    }
-
-    private void OnWritingImportClick(object sender, RoutedEventArgs e)
-    {
-        var dialog = new OpenFileDialog { Filter = "Markdown files (*.md)|*.md", CheckFileExists = true };
-        if (dialog.ShowDialog(this) != true)
-        {
-            return;
-        }
-
-        foreach (var entry in WritingMarkdownParser.ParseMultiple(dialog.FileName))
-        {
-            _writingRepository.Add(entry);
-        }
-
-        _writingRepository.Save();
-        RefreshExpressionData();
-    }
-
-    private void OnWritingExportClick(object sender, RoutedEventArgs e)
-    {
-        var dialog = new SaveFileDialog { Filter = "Markdown files (*.md)|*.md", FileName = "writing-export.md" };
-        if (dialog.ShowDialog(this) == true)
-        {
-            WritingMarkdownParser.ExportMultiple(_writingRepository.Entries, dialog.FileName);
-        }
-    }
-
     private void OnDocumentContextMenuOpening(object sender, ContextMenuEventArgs e)
     {
         if (DocumentViewer.Selection.IsEmpty)
@@ -492,24 +416,5 @@ public partial class ReadingWindow : Window
     private void OnTodayEnglishClick(object sender, RoutedEventArgs e)
     {
         new TodayEnglishWindow().Show();
-    }
-
-    private void OnImportTodayEnglishClick(object sender, RoutedEventArgs e)
-    {
-        var content = TodayEnglishFile.ReadOrDefault();
-        var result = TodayEnglishImportService.ImportContent(content, _interpretationRepository);
-
-        if (result.InterpretationsAdded > 0)
-        {
-            RefreshExpressionData();
-        }
-
-        MessageBox.Show(
-            this,
-            $"Added {result.InterpretationsAdded} new word(s).\n" +
-            $"Skipped as duplicates: {result.DuplicatesSkipped}",
-            "Import Complete",
-            MessageBoxButton.OK,
-            MessageBoxImage.Information);
     }
 }
