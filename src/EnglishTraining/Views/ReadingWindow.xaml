@@ -11,6 +11,8 @@
                         <MenuItem Header="Load" Click="OnFilesLoadClick" />
                         <MenuItem Header="Save" Click="OnFilesSaveClick" />
                         <MenuItem Header="Save As" Click="OnFilesSaveAsClick" />
+                        <Separator />
+                        <MenuItem Header="Import All" Click="OnFilesImportAllClick" />
                     </MenuItem>
                     <MenuItem Header="Sentences">
                         <MenuItem Header="Setting" Click="OnManageTopicsClick" />

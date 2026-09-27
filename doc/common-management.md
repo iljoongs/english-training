@@ -757,7 +757,7 @@ went to
 
 ```text
 Menu
-├─ Files      Load / Save / Save As
+├─ Files      Load / Save / Save As / Import All (§30)
 ├─ Sentences  Setting / Import / Export
 ├─ Words      Setting / Import / Export
 ├─ Writing    Setting / Import / Export
@@ -876,3 +876,48 @@ wondering if
 
 * `Services/TodayEnglishParser.cs`, `Services/TodayEnglishImportService.cs`, `Models/TodayEnglishImportResult.cs`
 * 테스트: `TodayEnglishParserTests`(형식별 매칭/스킵 케이스), `TodayEnglishImportServiceTests`(중복 스킵, 저장 라운드트립, 반복 실행 시 멱등성)
+
+---
+
+## 30. "Files > Import All" (레슨 파일 → 문장·단어·영작 한 번에)
+
+문장/단어/영작을 각각 `Import`하려면 파일 세 개를 따로 만들어 세 번 가져와야 했다. 이를 줄이기 위해 **기사 하나 아래에 그 기사의 본문·단어·영작을 함께 묶는 "레슨 파일"** 형식을 추가하고, 읽기 창 `Menu > Files > Import All`로 한 번에 세 저장소에 넣는다. 기존 `Sentences`/`Words`/`Writing`의 `Import`는 그대로 둔다.
+
+샘플 파일: [doc/sample-lesson.md](sample-lesson.md).
+
+### 30.1 형식
+
+```markdown
+# 2026-09-27
+
+## Working from Home
+
+### Text
+More and more companies are allowing their employees to work from home ...
+
+### Words
+commute (v) (통근하다) (commute to work)
+would rather (phrase) (차라리 ~하겠다) (would rather A than B)
+
+### Writing
+would rather | 두 가지 중 하나를 더 원할 때 | I would rather walk than wait.
+commute | I commute by bus.
+```
+
+* `## 기사 제목` → 주제(`Topic`) 하나. 첫 `## ` 앞의 내용(`# 날짜` 등)은 무시한다.
+* `### Text` → 그 주제의 본문. 문장 가져오기([sentence-management.md](sentence-management.md) §6)와 같이 마크다운 링크는 텍스트만 남기고 연속 빈 줄은 하나로 정리한다(`MarkdownSectionSplitter.CleanBody`).
+* `### Words` → 단어 관리. 한 줄에 한 단어, **today.md와 같은 `단어(품사) (해석) (표현)` 형식**(§29.1)이며 `TodayEnglishParser`를 그대로 재사용한다. 그래서 해석/표현 안에 괄호를 쓸 수 없다.
+* `### Writing` → 영작 관리. 한 줄에 한 항목, `표현 | 설명 | 예문`(설명을 생략한 `표현 | 예문`도 허용). 설명/예문 안에 `|`는 쓸 수 없다.
+* 블록 이름은 한글 `본문`/`단어`/`영작`도 인식한다. `Words`/`Writing` 줄 앞의 `- ` 글머리표는 무시한다. 형식에 맞지 않는 줄은 조용히 건너뛴다.
+* 한 기사에 `Text`만 있거나 `Words`/`Writing`만 있어도 된다(본문이 비어 있으면 주제는 만들지 않는다).
+
+### 30.2 동작 방식
+
+* `LessonMarkdownParser.ParseContent`가 파일을 `(주제 목록, 단어 목록, 영작 목록)`으로 나눈다(파일 I/O 없는 순수 함수).
+* `LessonImportService.ImportContent`가 세 저장소에 추가한다. **중복 처리**: 주제는 같은 제목(대소문자 무시), 단어/영작은 같은 정규화 텍스트(`TextNormalizer`, §14)가 이미 있거나 이번 가져오기에서 먼저 추가됐으면 건너뛴다 — §29와 같이 같은 파일을 여러 번 가져와도 안전하다. 새 항목이 있는 저장소만 `Save()`한다.
+* 가져오기가 끝나면 주제 목록과 학습 팝업 데이터를 다시 반영하고, "주제 N개, 단어 N개, 영작 N개 추가 / 중복 K개 건너뜀" 메시지를 보여준다.
+
+### 30.3 구현 위치
+
+* `Services/LessonMarkdownParser.cs`, `Services/LessonImportService.cs`, `Models/LessonImportResult.cs`, `Views/ReadingWindow.xaml(.cs)`의 `OnFilesImportAllClick`
+* 테스트: `LessonImportTests`(기사별 분리, 링크 정리, `표현 | 예문` 2칸 형식, 중복 스킵, 저장 라운드트립, 반복 실행 시 멱등성)
