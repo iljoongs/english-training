@@ -5,7 +5,7 @@ namespace EnglishTraining.Services;
 
 /// <summary>
 /// Parses a lesson file (§30) — a "## 기사 제목" article followed by its
-/// "### Text"/"### Words"/"### Writing" sections (Korean aliases "본문"/"단어"/
+/// "### Text"/"### Words"/"### Writing"/"### Translation" sections (Korean aliases "본문"/"단어"/
 /// "영작" also recognized) — into the Topic/InterpretationEntry/WritingEntry
 /// lists that feed the reading window and its learning popup (§31).
 /// </summary>
@@ -31,20 +31,28 @@ public static class LessonMarkdownParser
                 continue;
             }
 
+            Topic? articleTopic = null;
+            var translations = new List<TranslationPair>();
+
             foreach (var (sectionTitle, sectionBody) in sections)
             {
                 if (IsSectionNamed(sectionTitle, "Text", "본문"))
                 {
                     if (sectionBody.Length > 0)
                     {
-                        topics.Add(new Topic
+                        articleTopic = new Topic
                         {
                             Id = Guid.NewGuid(),
                             Title = title,
                             Text = sectionBody,
                             SourceFileName = sourceFileName,
-                        });
+                        };
+                        topics.Add(articleTopic);
                     }
+                }
+                else if (IsSectionNamed(sectionTitle, "Translation", "해석"))
+                {
+                    translations.AddRange(ParseTranslationLines(sectionBody));
                 }
                 else if (IsSectionNamed(sectionTitle, "Words", "단어"))
                 {
@@ -54,6 +62,11 @@ public static class LessonMarkdownParser
                 {
                     writings.AddRange(ParseWritingLines(sectionBody));
                 }
+            }
+
+            if (articleTopic is not null)
+            {
+                articleTopic.Translations = translations;
             }
         }
 
@@ -124,6 +137,32 @@ public static class LessonMarkdownParser
                 case 3:
                     yield return new WritingEntry { Text = parts[0], Description = parts[1], Example = parts[2] };
                     break;
+            }
+        }
+    }
+
+    private static IEnumerable<TranslationPair> ParseTranslationLines(string sectionBody)
+    {
+        foreach (var rawLine in sectionBody.Split('\n'))
+        {
+            var line = StripBullet(rawLine);
+            if (line.Length == 0)
+            {
+                continue;
+            }
+
+            // English sentences may contain no '|', so split on the first one.
+            var separator = line.IndexOf('|');
+            if (separator <= 0)
+            {
+                continue;
+            }
+
+            var english = line[..separator].Trim();
+            var korean = line[(separator + 1)..].Trim();
+            if (english.Length > 0 && korean.Length > 0)
+            {
+                yield return new TranslationPair(english, korean);
             }
         }
     }

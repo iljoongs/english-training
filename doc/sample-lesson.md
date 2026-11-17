@@ -7,6 +7,11 @@
 ### Text
 More and more companies are allowing their employees to work from home at least two days a week. Supporters say this saves time and money because workers do not have to commute. A recent survey found that many workers would rather quit than go back to the office five days a week.
 
+### Translation
+More and more companies are allowing their employees to work from home at least two days a week. | 점점 더 많은 회사가 직원들이 일주일에 최소 이틀은 재택근무하도록 허용하고 있다.
+Supporters say this saves time and money because workers do not have to commute. | 지지자들은 직원들이 통근할 필요가 없어 시간과 돈을 아낄 수 있다고 말한다.
+A recent survey found that many workers would rather quit than go back to the office five days a week. | 최근 설문 조사에 따르면 많은 직원이 주 5일 사무실로 돌아가느니 차라리 그만두겠다고 한다.
+
 ### Words
 commute (v) (통근하다) (commute to work)
 survey (n) (설문 조사) (a recent survey found that ~)

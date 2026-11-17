@@ -12,4 +12,10 @@ public sealed class Topic
     /// regenerated every read).
     /// </summary>
     public required string SourceFileName { get; init; }
+
+    /// <summary>
+    /// Sentence-by-sentence translation from the lesson's "### Translation"
+    /// block (§32), in file order. Empty when the lesson has none.
+    /// </summary>
+    public IReadOnlyList<TranslationPair> Translations { get; set; } = [];
 }

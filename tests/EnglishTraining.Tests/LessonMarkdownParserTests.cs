@@ -29,6 +29,41 @@ public class LessonMarkdownParserTests
     }
 
     [Fact]
+    public void ParseContent_TranslationBlock_AttachesPairsToTopic()
+    {
+        const string markdown = """
+            ## Title
+
+            ### Translation
+            Hello there. | 안녕하세요.
+            - I agree | with | pipes. | 동의합니다.
+            no separator line
+            Empty korean |
+
+            ### Text
+            Hello there.
+            """;
+
+        var (topics, _, _) = LessonMarkdownParser.ParseContent(markdown, "lesson.md");
+
+        var topic = Assert.Single(topics);
+        Assert.Equal(2, topic.Translations.Count);
+        Assert.Equal("Hello there.", topic.Translations[0].English);
+        Assert.Equal("안녕하세요.", topic.Translations[0].Korean);
+        Assert.Equal("I agree", topic.Translations[1].English);
+    }
+
+    [Fact]
+    public void ParseContent_KoreanTranslationBlockName_IsRecognized()
+    {
+        const string markdown = "## T\n\n### 본문\nHi.\n\n### 해석\nHi. | 안녕.\n";
+
+        var (topics, _, _) = LessonMarkdownParser.ParseContent(markdown, "lesson.md");
+
+        Assert.Single(Assert.Single(topics).Translations);
+    }
+
+    [Fact]
     public void ParseContent_KoreanBlockNames_AreRecognized()
     {
         const string markdown = """

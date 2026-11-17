@@ -24,6 +24,7 @@ public partial class ReadingWindow : Window
     private readonly PopupContentView _popupContent;
     private ExpressionSpan? _activeSpan;
     private Guid? _currentTopicId;
+    private Topic? _currentTopic;
 
     public ReadingWindow(AppSettingsStore settingsStore)
     {
@@ -92,12 +93,14 @@ public partial class ReadingWindow : Window
         {
             Title = selected.Title;
             _currentTopicId = selected.Id;
+            _currentTopic = selected.Topic;
             _viewModel.LoadText(selected.Text);
         }
         else
         {
             Title = "English Training";
             _currentTopicId = null;
+            _currentTopic = null;
             _viewModel.LoadText(string.Empty);
         }
 
@@ -144,6 +147,7 @@ public partial class ReadingWindow : Window
 
         Title = topic.Title;
         _currentTopicId = topic.Id;
+        _currentTopic = topic;
         _settingsStore.SetLastSelectedTopic(topic.SourceFileName, topic.Title);
         _viewModel.LoadText(topic.Text);
         BuildDocument();
@@ -208,7 +212,63 @@ public partial class ReadingWindow : Window
 
         Document.Blocks.Clear();
         Document.Blocks.Add(paragraph);
+        AppendFullTranslation();
         ApplyDocumentFormatting();
+    }
+
+    /// <summary>
+    /// Appends the lesson's full Korean translation under the body when the
+    /// Translation toggle is on (§32.3).
+    /// </summary>
+    private void AppendFullTranslation()
+    {
+        if (TranslationCheckBox.IsChecked != true || _currentTopic is not { Translations.Count: > 0 } topic)
+        {
+            return;
+        }
+
+        Document.Blocks.Add(new Paragraph(new Run("해석"))
+        {
+            FontWeight = FontWeights.Bold,
+            Margin = new Thickness(0, 8, 0, 8),
+        });
+        Document.Blocks.Add(new Paragraph(new Run(string.Join(" ", topic.Translations.Select(t => t.Korean))))
+        {
+            Margin = new Thickness(0, 0, 0, 16),
+        });
+    }
+
+    private void OnTranslationToggled(object sender, RoutedEventArgs e)
+    {
+        if (IsLoaded)
+        {
+            BuildDocument();
+        }
+    }
+
+    private void OnShowTranslationClick(object sender, RoutedEventArgs e)
+    {
+        var selected = TextNormalizer.Normalize(DocumentViewer.Selection.Text);
+        if (selected.Length == 0 || _currentTopic is null)
+        {
+            return;
+        }
+
+        var pair = _currentTopic.Translations.FirstOrDefault(t =>
+        {
+            var english = TextNormalizer.Normalize(t.English);
+            return english.Contains(selected) || selected.Contains(english);
+        });
+
+        if (pair is null)
+        {
+            MessageBox.Show(this, "No translation found for the selected text.", "Translation",
+                MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        MessageBox.Show(this, $"{pair.English}\n\n{pair.Korean}", "Translation",
+            MessageBoxButton.OK, MessageBoxImage.None);
     }
 
     private void ApplySavedDisplaySettings()
