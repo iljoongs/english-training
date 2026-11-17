@@ -460,46 +460,30 @@ public partial class ReadingWindow : Window
         }
     }
 
-    private void OnRegisterWordClick(object sender, RoutedEventArgs e)
+    /// <summary>
+    /// Adds the selected text to english-today.md under the current topic. Words,
+    /// idioms, expressions and sentences are stored alike (§27).
+    /// </summary>
+    private void OnAddToTodayEnglishClick(object sender, RoutedEventArgs e)
     {
-        var word = DocumentViewer.Selection.Text.Trim();
-        if (word.Length == 0 || _currentTopic is null)
+        var text = DocumentViewer.Selection.Text.Trim();
+        if (text.Length == 0 || _currentTopic is null)
         {
             return;
         }
 
-        var added = TodayEnglishFile.AddWord(_currentTopic.Title, _currentTopic.Text, word);
-        ShowRegistrationResult(added, "word");
-    }
-
-    private void OnRegisterSentenceClick(object sender, RoutedEventArgs e)
-    {
-        var sentence = DocumentViewer.Selection.Text.Trim();
-        if (sentence.Length == 0 || _currentTopic is null)
-        {
-            return;
-        }
-
-        var added = TodayEnglishFile.AddSentence(_currentTopic.Title, _currentTopic.Text, sentence);
-        ShowRegistrationResult(added, "sentence");
+        ShowRegistrationResult(TodayEnglishFile.AddItem(_currentTopic.Title, text));
     }
 
     private void OnTodayEnglishClick(object sender, RoutedEventArgs e)
     {
-        if (_currentTopic is null)
-        {
-            MessageBox.Show(this, "Select a topic first.", "Today's English",
-                MessageBoxButton.OK, MessageBoxImage.Information);
-            return;
-        }
-
-        new TodayEnglishWindow(_currentTopic.Title, _currentTopic.Text).Show();
+        new TodayEnglishWindow().Show();
     }
 
-    private void ShowRegistrationResult(bool added, string kind)
+    private void ShowRegistrationResult(bool added)
     {
         StatusTextBlock.Text = added
-            ? $"Added {kind} to Today's English ({_currentTopic?.Title})."
+            ? $"Added to Today's English ({_currentTopic?.Title})."
             : $"Already listed in Today's English ({_currentTopic?.Title}).";
     }
 }

@@ -5,29 +5,25 @@ using EnglishTraining.Services;
 namespace EnglishTraining.Views;
 
 /// <summary>
-/// Free-text editor for one topic's "Today's English" memo (§27.1). Save writes
-/// "data/today/{topic}.md"; Copy for Claude puts the memo plus lesson-file
-/// instructions on the clipboard so it can be pasted into Claude.
+/// Free-text editor for "data/english-today.md" (§27.2). Save overwrites the file;
+/// Copy for Claude puts the memo plus processing instructions on the clipboard.
 /// </summary>
 public partial class TodayEnglishWindow : Window
 {
-    private readonly string _topicTitle;
     private readonly string _filePath;
 
-    public TodayEnglishWindow(string topicTitle, string topicText)
+    public TodayEnglishWindow()
     {
         InitializeComponent();
 
-        _topicTitle = topicTitle;
-        _filePath = TodayEnglishFile.ResolvePath(topicTitle);
-        Title = $"Today's English - {topicTitle}";
-        ContentTextBox.Text = TodayEnglishFile.ReadOrTemplate(topicTitle, topicText);
+        _filePath = TodayEnglishFile.ResolvePath();
+        ContentTextBox.Text = TodayEnglishFile.ReadOrDefault();
         UpdateStatus();
     }
 
     private void OnSaveClick(object sender, RoutedEventArgs e)
     {
-        TodayEnglishFile.Write(_topicTitle, ContentTextBox.Text);
+        TodayEnglishFile.Write(ContentTextBox.Text);
         UpdateStatus();
     }
 

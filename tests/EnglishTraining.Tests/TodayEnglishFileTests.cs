@@ -6,6 +6,8 @@ public class TodayEnglishFileTests : IDisposable
 {
     private readonly string _dir = Path.Combine(Path.GetTempPath(), "today-english-tests-" + Guid.NewGuid().ToString("N"));
 
+    private string TestPath => Path.Combine(_dir, "english-today.md");
+
     public void Dispose()
     {
         if (Directory.Exists(_dir))
@@ -15,100 +17,93 @@ public class TodayEnglishFileTests : IDisposable
     }
 
     [Fact]
-    public void ResolveDirectory_PointsToDataToday()
+    public void ResolvePath_PointsToDataEnglishTodayMd()
     {
-        Assert.EndsWith(Path.Combine("data", "today"), TodayEnglishFile.ResolveDirectory());
-    }
-
-    [Theory]
-    [InlineData("Working from Home", "working-from-home")]
-    [InlineData("  Sleep & Memory! ", "sleep-memory")]
-    [InlineData("재택 근무", "재택-근무")]
-    [InlineData("???", "untitled")]
-    public void Slugify_MakesSafeFileNames(string title, string expected)
-    {
-        Assert.Equal(expected, TodayEnglishFile.Slugify(title));
+        Assert.EndsWith(Path.Combine("data", "english-today.md"), TodayEnglishFile.ResolvePath());
     }
 
     [Fact]
-    public void AddWord_CreatesTopicFileFromTemplate()
+    public void AddItem_CreatesFileWithTopicSection()
     {
-        var added = TodayEnglishFile.AddWord("Working from Home", "Body text.", "deadline", _dir);
+        var added = TodayEnglishFile.AddItem("Working from Home", "deadline", TestPath);
 
         Assert.True(added);
-        var content = File.ReadAllText(Path.Combine(_dir, "working-from-home.md"));
-        Assert.Contains("## Working from Home", content);
-        Assert.Contains("### Text\nBody text.", content);
-        Assert.Contains("### Words\n- deadline", content);
-        Assert.Contains("### Sentences", content);
+        var content = File.ReadAllText(TestPath);
+        Assert.StartsWith("# English Today", content);
+        Assert.Contains("## Working from Home\n- deadline", content);
     }
 
     [Fact]
-    public void AddWordAndSentence_GoToTheirOwnSections()
+    public void AddItem_WordsAndSentencesAreStoredAlike_GroupedByTopic()
     {
-        TodayEnglishFile.AddWord("T", "Body.", "deadline", _dir);
-        TodayEnglishFile.AddSentence("T", "Body.", "I look forward to seeing you again.", _dir);
-        TodayEnglishFile.AddWord("T", "Body.", "flexible", _dir);
+        TodayEnglishFile.AddItem("A", "deadline", TestPath);
+        TodayEnglishFile.AddItem("B", "would rather", TestPath);
+        TodayEnglishFile.AddItem("A", "I look forward to seeing you again.", TestPath);
 
-        var content = TodayEnglishFile.ReadOrTemplate("T", "Body.", _dir);
-        var wordsAt = content.IndexOf("### Words", StringComparison.Ordinal);
-        var sentencesAt = content.IndexOf("### Sentences", StringComparison.Ordinal);
-        Assert.True(content.IndexOf("- deadline", StringComparison.Ordinal) > wordsAt);
-        Assert.True(content.IndexOf("- flexible", StringComparison.Ordinal) < sentencesAt);
-        Assert.True(content.IndexOf("- I look forward", StringComparison.Ordinal) > sentencesAt);
+        var content = TodayEnglishFile.ReadOrDefault(TestPath);
+        var a = content.IndexOf("## A", StringComparison.Ordinal);
+        var b = content.IndexOf("## B", StringComparison.Ordinal);
+        Assert.True(a < content.IndexOf("- deadline", StringComparison.Ordinal));
+        Assert.True(content.IndexOf("- I look forward", StringComparison.Ordinal) < b);
+        Assert.True(b < content.IndexOf("- would rather", StringComparison.Ordinal));
+        Assert.DoesNotContain("**", content);
+        Assert.DoesNotContain("###", content);
     }
 
     [Fact]
-    public void AddWord_Duplicate_IsSkipped()
+    public void AddItem_DuplicateInSameTopic_IsSkipped_ButAllowedInOtherTopic()
     {
-        Assert.True(TodayEnglishFile.AddWord("T", "Body.", "deadline", _dir));
-        Assert.False(TodayEnglishFile.AddWord("T", "Body.", "Deadline", _dir));
-        Assert.False(TodayEnglishFile.AddWord("T", "Body.", "   ", _dir));
+        Assert.True(TodayEnglishFile.AddItem("A", "deadline", TestPath));
+        Assert.False(TodayEnglishFile.AddItem("A", "Deadline", TestPath));
+        Assert.False(TodayEnglishFile.AddItem("A", "   ", TestPath));
+        Assert.True(TodayEnglishFile.AddItem("B", "deadline", TestPath));
 
-        var content = TodayEnglishFile.ReadOrTemplate("T", "Body.", _dir);
-        Assert.Single(content.Split('\n'), l => l.Trim().Equals("- deadline", StringComparison.OrdinalIgnoreCase));
+        var lines = TodayEnglishFile.ReadOrDefault(TestPath).Split('\n');
+        Assert.Equal(2, lines.Count(l => l.Trim().Equals("- deadline", StringComparison.OrdinalIgnoreCase)));
     }
 
     [Fact]
     public void AddItem_CollapsesWhitespaceInSelection()
     {
-        TodayEnglishFile.AddSentence("T", "Body.", "line one\r\n  line two", _dir);
+        TodayEnglishFile.AddItem("A", "line one\r\n  line two", TestPath);
 
-        Assert.Contains("- line one line two", TodayEnglishFile.ReadOrTemplate("T", "Body.", _dir));
+        Assert.Contains("- line one line two", TodayEnglishFile.ReadOrDefault(TestPath));
     }
 
     [Fact]
-    public void InsertItem_KeepsHandEditedContent_AndAddsMissingSection()
+    public void InsertItem_KeepsHandEditedContent()
     {
-        var edited = "# Today's English\n\n## T\n\n### Words\n- deadline (n) (마감일)\n\nmy own note\n";
+        var edited = "# English Today\n\n## A\n- deadline (마감일)\n\nmy own note\n\n## B\n- flexible\n";
 
-        var result = TodayEnglishFile.InsertItem(edited, "Words", "flexible");
-        result = TodayEnglishFile.InsertItem(result, "Sentences", "Hello there.");
+        var result = TodayEnglishFile.InsertItem(edited, "A", "commute");
 
-        Assert.Contains("- deadline (n) (마감일)\n\nmy own note\n- flexible", result);
-        Assert.Contains("my own note", result);
-        Assert.Contains("### Sentences\n- Hello there.", result);
+        Assert.Contains("my own note\n- commute\n\n## B", result);
+        Assert.Contains("- deadline (마감일)", result);
+        Assert.Contains("## B\n- flexible", result);
     }
 
     [Fact]
-    public void Write_ThenReadOrTemplate_RoundTrips()
+    public void Write_ThenReadOrDefault_RoundTrips()
     {
-        TodayEnglishFile.Write("T", "custom content\n", _dir);
+        TodayEnglishFile.Write("custom content\n", TestPath);
 
-        Assert.Equal("custom content\n", TodayEnglishFile.ReadOrTemplate("T", "Body.", _dir));
+        Assert.Equal("custom content\n", TodayEnglishFile.ReadOrDefault(TestPath));
+    }
+
+    [Fact]
+    public void ReadOrDefault_MissingFile_ReturnsHeader()
+    {
+        Assert.Equal(TodayEnglishFile.DefaultContent, TodayEnglishFile.ReadOrDefault(TestPath));
     }
 
     [Fact]
     public void BuildClaudePrompt_ContainsInstructionsAndMemo()
     {
-        var memo = TodayEnglishFile.BuildTemplate("Working from Home", "Body text.");
-
-        var prompt = TodayEnglishFile.BuildClaudePrompt(memo);
+        var prompt = TodayEnglishFile.BuildClaudePrompt("# English Today\n\n## A\n- deadline\n");
 
         Assert.Contains("### Translation", prompt);
         Assert.Contains("단어 (품사) (해석) (표현)", prompt);
         Assert.Contains("표현 | 쓰임 설명 | 예문", prompt);
-        Assert.EndsWith("~~~\n", prompt.Replace("\r\n", "\n"));
-        Assert.Contains("## Working from Home", prompt);
+        Assert.Contains("## A\n- deadline", prompt);
     }
 }

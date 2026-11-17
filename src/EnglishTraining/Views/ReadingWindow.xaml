@@ -69,8 +69,7 @@
                         <ContextMenu>
                             <MenuItem Header="Copy" Command="Copy" />
                             <MenuItem Header="Show Translation" Click="OnShowTranslationClick" />
-                            <MenuItem Header="Add Word" Click="OnRegisterWordClick" />
-                            <MenuItem Header="Add Sentence" Click="OnRegisterSentenceClick" />
+                            <MenuItem Header="Add to Today's English" Click="OnAddToTodayEnglishClick" />
                         </ContextMenu>
                     </FlowDocumentPageViewer.ContextMenu>
                     <FlowDocument x:Name="Document" />
