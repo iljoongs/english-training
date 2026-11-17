@@ -35,10 +35,10 @@
 
 ## 5. 데이터 저장
 
-학습 데이터(주제·단어·영작)는 앱이 저장하지 않는다 — 설정된 데이터 폴더(§31.4)의 레슨 파일(§30)을 읽기만 한다. 앱이 실제로 쓰는 파일은 `%LOCALAPPDATA%\EnglishTraining\settings.json`과 저장소 안 `data/today.md`뿐이다.
+학습 데이터(주제·단어·영작)는 앱이 저장하지 않는다 — 설정된 데이터 폴더(§31.4)의 레슨 파일(§30)을 읽기만 한다. 앱이 실제로 쓰는 파일은 `%LOCALAPPDATA%\EnglishTraining\settings.json`과 저장소 안 `data/today/*.md`(주제별 메모)뿐이다.
 
 * JSON 직렬화(`settings.json`)는 `System.Text.Json`, `WriteIndented = true`.
-* 저장소 안 `data/`, `doc/sample-*.md` 등은 예시/원본 텍스트이지 앱이 관리하는 상태 파일이 아니다. 단, "단어/문장 등록"처럼 저장소 안 `data/`에 결과를 남기는 것 자체가 목적인 기능은 예외로 `RepoPaths.FindDataDirectory()`로 리포 루트를 찾아 `data/`에 직접 쓴다(예: `TodayEnglishFile` → `data/today.md`, §27 참고) — 이 경우도 실행 파일 상대 경로가 아니라 `EnglishTraining.sln` 위치 기준으로 찾는다.
+* 저장소 안 `data/`, `doc/sample-*.md` 등은 예시/원본 텍스트이지 앱이 관리하는 상태 파일이 아니다. 단, "단어/문장 등록"처럼 저장소 안 `data/`에 결과를 남기는 것 자체가 목적인 기능은 예외로 `RepoPaths.FindDataDirectory()`로 리포 루트를 찾아 `data/`에 직접 쓴다(예: `TodayEnglishFile` → `data/today/{주제}.md`, §27 참고) — 이 경우도 실행 파일 상대 경로가 아니라 `EnglishTraining.sln` 위치 기준으로 찾는다.
 * 데이터 폴더 경로(`AppSettings.DataFolder`)와 마지막 선택 주제(`LastSelectedTopicFile`/`LastSelectedTopicTitle`)는 `AppSettingsStore`를 통해서만 읽고 쓴다 — write-through(설정 즉시 저장) 패턴을 그대로 따른다.
 * API 키 등 시크릿이 필요한 기능을 추가할 때는 코드에 하드코딩하거나 저장소(git)에 커밋하지 않는다. 사용자가 앱 내 설정 창을 통해 입력하고 `AppSettingsStore`에만 저장하는 방식을 따른다 (계획 중인 예: 실시간 번역 기능, [doc/common-management.md](common-management.md) §26.5 참고 — 현재는 보류 상태로 코드에는 없음).
 

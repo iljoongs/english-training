@@ -802,37 +802,51 @@ Menu
 
 ---
 
-## 27. 단어/문장 등록과 "오늘의 영어" (data/today.md)
+## 27. 단어/문장 등록과 "오늘의 영어" (data/today/*.md)
 
-읽기 창 본문에서 텍스트를 드래그로 선택한 뒤 그 선택 영역 위에서 마우스 오른쪽 버튼을 클릭하면 팝업 메뉴(복사 / 단어 등록 / 문장 등록)가 뜬다. 선택된 텍스트가 없는 상태에서 우클릭하면 메뉴 자체가 뜨지 않는다.
+읽기 창 본문에서 텍스트를 드래그로 선택한 뒤 그 선택 영역 위에서 마우스 오른쪽 버튼을 클릭하면 팝업 메뉴(복사 / Show Translation / Add Word / Add Sentence)가 뜬다. 선택된 텍스트가 없는 상태에서 우클릭하면 메뉴 자체가 뜨지 않는다.
 
-`단어 등록` 또는 `문장 등록`을 클릭하면 선택된 텍스트가 `data/today.md`에 추가된다. 둘 다 같은 파일에 쓰되, 단어는 일반 텍스트 줄로, 문장은 `**굵게**`로 감싸서 한 파일 안에서도 단어와 문장을 한눈에 구분할 수 있게 한다.
+`Add Word` / `Add Sentence`는 선택한 텍스트를 **현재 보고 있는 주제의 메모 파일**에 추가한다. 주제마다 파일이 하나씩 생긴다.
 
-* 파일 위치: 저장소의 `data/today.md` (날짜별 파일이 아니라 고정된 파일명 하나다). `%LOCALAPPDATA%`가 아니라 저장소 안 `data/`에 쓴다 — 나중에 사람이 훑어보며 필요한 것만 골라 [해석/영작 관리](expression-management.md)에 직접 옮겨 담기 위한 메모 용도다. (§31 이후에는 관리 창이 없어지므로, 이 메모를 참고해 [english-data](../../english-data)에서 레슨 파일을 만든다. 우클릭 등록과 "오늘의 영어" 창은 그대로 유지된다.)
-* 파일이 없으면 `# 오늘의 영어` 제목과 함께 새로 만들고, 있으면 이어서 추가한다.
-* 형식은 `### ` 같은 헤딩이 아니라 일반 텍스트 한 줄이다. `단어 등록`은 선택한 텍스트를 그대로 한 줄 추가하고, `문장 등록`은 `**선택한 텍스트**`로 감싸 굵게 추가한다.
-* 이 형식은 [문장 관리](sentence-management.md)/[해석·영작 관리](expression-management.md)의 "여러 항목" md 가져오기(`### ` 기준 분리)와는 다르다 — 이 파일은 재가져오기용 초안이 아니라 사람이 읽고 골라내는 메모이기 때문에 의도적으로 단순한 텍스트로 남긴다.
+* 파일 위치: 저장소의 `data/today/{주제 제목 슬러그}.md`. 슬러그는 제목을 소문자로 바꾸고 글자·숫자가 아닌 문자 묶음을 `-`로 바꾼 것이다(예: `Working from Home` → `working-from-home.md`, 한글 제목은 그대로 유지). `data/`는 `.gitignore` 대상이다(§26.10).
+* 파일이 없으면 아래 형식의 틀을 만들면서 주제 본문(`### Text`)을 함께 복사해 넣고, 있으면 해당 섹션 끝에 `- 항목` 한 줄을 추가한다. 사람이 손으로 고친 내용은 그대로 보존한다(섹션 끝에만 끼워 넣음).
+* 같은 항목(대소문자 무시)이 이미 있으면 다시 추가하지 않고, 상태 표시줄에 `Already listed in Today's English`를 보여준다. 선택 텍스트의 줄바꿈·연속 공백은 공백 하나로 합친다.
+* 예전 단일 파일 `data/today.md`와 `**굵게**` 문장 표기는 폐지했다(기존 파일은 지우지 않고 그대로 두며 앱은 더 이상 읽지 않는다).
+
+### 27.1 메모 파일 형식 (Claude에 다시 넣기 위한 형식)
 
 ```markdown
-# 오늘의 영어
+# Today's English
 
-deadline
+## Working from Home
 
-wondering if
+### Text
+More and more companies are allowing their employees to work from home ...
 
-**I look forward to seeing you again.**
+### Words
+- deadline
+- wondering if
+
+### Sentences
+- I look forward to seeing you again.
 ```
 
-같은 표현을 여러 번 등록하면 중복 확인 없이 그대로 여러 번 추가된다.
+* `## 주제 제목` 아래에 `### Text`(본문) / `### Words`(모르는 단어·숙어) / `### Sentences`(익히고 싶은 문장)를 둔다. 항목은 `- ` 글머리표 한 줄씩이며, 뜻이나 예문을 손으로 적어 두어도 된다.
+* 레슨 파일(§30)과 같은 `##`/`###` 계층이라, Claude가 이 메모를 레슨 파일로 변환하기 쉽다.
+* 샘플: [doc/sample-today.md](sample-today.md).
 
-### 27.1 "오늘의 영어" 창 (읽기 창 메뉴: 학습 > 오늘의 영어)
+### 27.2 "오늘의 영어" 창 (읽기 창 메뉴: Menu > Study > Today's English)
 
-`data/today.md`를 직접 열어 읽고 고쳐 쓸 수 있는 별도 창이다. 우클릭으로 등록한 단어/문장을 다듬거나, 뜻/예문을 손으로 채워 넣거나, 필요 없는 줄을 지우는 등 자유 형식 편집이 목적이다.
+**현재 선택된 주제**의 메모 파일(`27.1`)을 열어 읽고 고쳐 쓰는 창이다(주제가 없으면 `Select a topic first.`). 우클릭으로 모은 단어/문장을 다듬거나 뜻을 채워 넣는 자유 형식 편집이 목적이다.
 
-* 창을 열면 파일 전체 내용을 하나의 텍스트 편집 영역에 불러온다(파일이 없으면 `# 오늘의 영어` 기본 내용으로 시작).
-* 상단 `파일 > 저장`으로 편집한 내용을 그대로 `data/today.md`에 덮어쓴다. 특별한 서식 검증은 하지 않는다 — 완전한 자유 텍스트 편집기다.
-* 하단에 파일 경로와 크기를 표시한다(다른 관리 창들의 "파일 (크기)" 상태 표시와 동일한 관례).
-* 다른 관리 창처럼 여러 개를 동시에 열 수 있다. 단, 같은 파일을 여러 창에서 동시에 저장하면 나중에 저장한 내용이 이긴다(마지막 저장이 우선) — 단일 사용자의 개인용 메모 파일이라는 전제하에 별도 잠금/충돌 처리는 하지 않는다.
+* 창 제목은 `Today's English - {주제 제목}`. 파일이 없으면 틀(본문 포함)로 시작한다.
+* `File > Save`: 편집한 내용을 그대로 그 주제의 파일에 덮어쓴다. 서식 검증은 하지 않는다.
+* `File > Copy for Claude`: 편집 중인 내용에 **레슨 파일 생성 지시문**을 붙여 클립보드에 복사한다. 그대로 Claude에 붙여 넣으면 레슨 파일(§30: `Text`/`Translation`/`Words`/`Writing`)을 만들어 준다. 지시문에는 출력 구조, 각 블록의 줄 형식, 괄호·`|` 사용 금지 규칙이 들어 있고(`TodayEnglishFile.BuildClaudePrompt`), 메모는 `~~~markdown` 블록 안에 담긴다. Claude가 만든 결과는 english-data의 `training/`에 저장하고 앱에서 `Reload`한다.
+* 하단에 파일 경로와 크기를 표시한다. 여러 창을 동시에 열 수 있으며 같은 파일은 마지막 저장이 이긴다(단일 사용자 전제).
+
+### 27.3 구현 위치
+
+`Services/TodayEnglishFile.cs`(경로·슬러그·항목 삽입·Claude 지시문), `Views/TodayEnglishWindow.xaml(.cs)`, `Views/ReadingWindow.xaml.cs`(우클릭 등록). 테스트: `TodayEnglishFileTests`(임시 폴더 사용).
 
 ---
 
@@ -853,7 +867,7 @@ wondering if
 
 ## 29. "학습 > 가져오기" (data/today.md → 단어 관리)
 
-> **제거됨 (§31)**: `Study > Import`와 이 절의 가져오기 기능은 제거됐다. today.md 단어 줄 형식(§29.1)은 레슨 파일의 `### Words` 형식(§30)에서 계속 쓰인다(`TodayEnglishParser.TryParseWordLine`을 `LessonMarkdownParser`가 재사용).
+> **제거됨 (§31)**: `Study > Import`와 이 절의 가져오기 기능은 제거됐다. 이 절이 말하는 `data/today.md`와 그 줄 형식은 §27 개편으로 폐지됐다(단어 줄 형식 `단어(품사) (해석) (표현)`만 레슨 파일 `### Words`에 남음). today.md 단어 줄 형식(§29.1)은 레슨 파일의 `### Words` 형식(§30)에서 계속 쓰인다(`TodayEnglishParser.TryParseWordLine`을 `LessonMarkdownParser`가 재사용).
 
 읽기 창 메뉴의 `학습 > 가져오기`는 `data/today.md`(§27)를 읽어 단어 관리(§26.7) 데이터를 자동으로 등록하는 기능이다.
 
@@ -957,7 +971,7 @@ Menu (☰)
 ```
 
 * 제거: `Files`(Load/Save/Save As), `Sentences`/`Words`/`Writing`(각 Setting/Import/Export), `Study > Import`(§29).
-* 유지: `Study > Today's English`(§27.1), 본문 우클릭 `Copy`/`Add Word`/`Add Sentence`(§27). today.md는 읽다가 모르는 단어·문장을 적어 두는 **메모**로 남고, 그 메모를 참고해 english-data에서 레슨 파일을 만든다.
+* 유지: `Study > Today's English`(§27.2), 본문 우클릭 `Copy`/`Show Translation`/`Add Word`/`Add Sentence`(§27). 주제별 메모(`data/today/`, §27)에 모은 단어·문장은 `Copy for Claude`로 Claude에 넣어 english-data용 레슨 파일을 만든다.
 * 툴바(단어/영작 체크박스, 글꼴·줄간격·여백·테마·밝기, §28)는 그대로다.
 
 ### 31.4 `Settings` 창
