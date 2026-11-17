@@ -220,6 +220,11 @@ public partial class ReadingWindow : Window
     /// Appends the lesson's full Korean translation under the body when the
     /// Translation toggle is on (§32.3).
     /// </summary>
+    private const string TranslationParagraphTag = "translation";
+
+    /// <summary>Translation text is shown at 70% of the English body size (§32.3).</summary>
+    private const double TranslationFontScale = 0.7;
+
     private void AppendFullTranslation()
     {
         if (TranslationCheckBox.IsChecked != true || _currentTopic is not { Translations.Count: > 0 } topic)
@@ -231,10 +236,12 @@ public partial class ReadingWindow : Window
         {
             FontWeight = FontWeights.Bold,
             Margin = new Thickness(0, 8, 0, 8),
+            Tag = TranslationParagraphTag,
         });
         Document.Blocks.Add(new Paragraph(new Run(string.Join(" ", topic.Translations.Select(t => t.Korean))))
         {
             Margin = new Thickness(0, 0, 0, 16),
+            Tag = TranslationParagraphTag,
         });
     }
 
@@ -354,10 +361,12 @@ public partial class ReadingWindow : Window
         Document.Background = _viewModel.PageBackgroundBrush;
         Document.Foreground = _viewModel.ForegroundBrush;
 
-        var lineHeight = _viewModel.FontSize * 1.3 * _viewModel.LineSpacingMultiplier;
         foreach (var paragraph in Document.Blocks.OfType<Paragraph>())
         {
-            paragraph.LineHeight = lineHeight;
+            var isTranslation = paragraph.Tag is TranslationParagraphTag;
+            var fontSize = isTranslation ? _viewModel.FontSize * TranslationFontScale : _viewModel.FontSize;
+            paragraph.FontSize = fontSize;
+            paragraph.LineHeight = fontSize * 1.3 * _viewModel.LineSpacingMultiplier;
         }
     }
 
